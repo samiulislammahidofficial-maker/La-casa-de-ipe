@@ -1,151 +1,43 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Bell,
   Terminal,
-  Diamond,
-  Shield,
-  Wrench,
+  ShieldCheck,
+  XCircle,
   Filter,
-  Lock,
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import CountdownTimer from "../components/CountdownTimer";
-import {
-  auth,
-  db,
-  onAuthStateChanged,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  query,
-  orderBy
-} from "../lib/firebaseUtils";
+import { useMockState } from "../context/MockStateContext";
+import { ViewType } from "../App";
 
 interface DashboardViewProps {
-  onViewChange: (view: "hub" | "dashboard" | "quiz" | "ticket") => void;
+  onViewChange: (view: ViewType) => void;
 }
 
 export default function DashboardView({ onViewChange }: DashboardViewProps) {
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [registrations, setRegistrations] = useState<any[]>([]);
-  const [usersMap, setUsersMap] = useState<Record<string, any>>({});
+  const { pendingRequests, approveRegistration, rejectRegistration } = useMockState();
   const [filterEvent, setFilterEvent] = useState<string>("ALL");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const docRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists() && docSnap.data().role === "admin") {
-            setIsAdmin(true);
-            fetchAllUsersAndListenToRegistrations();
-          } else {
-            setIsAdmin(false);
-            setLoading(false);
-          }
-        } catch (error) {
-          console.error("Error checking admin role:", error);
-          setIsAdmin(false);
-          setLoading(false);
-        }
-      } else {
-        setIsAdmin(false);
-        setLoading(false);
-      }
-    });
-
-    let unsubscribeRegs: () => void;
-
-    const fetchAllUsersAndListenToRegistrations = async () => {
-      try {
-        const usersSnapshot = await getDocs(collection(db, "users"));
-        const map: Record<string, any> = {};
-        usersSnapshot.docs.forEach((d) => {
-          map[d.id] = d.data();
-        });
-        setUsersMap(map);
-
-        const q = query(
-          collection(db, "registrations"),
-          orderBy("timestamp", "desc"),
-        );
-        unsubscribeRegs = onSnapshot(q, (snapshot) => {
-          const regs = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setRegistrations(regs);
-          setLoading(false);
-        });
-      } catch (error) {
-        console.error("Error fetching admin data:", error);
-        setLoading(false);
-      }
-    };
-
-    return () => {
-      unsubscribeAuth();
-      if (unsubscribeRegs) unsubscribeRegs();
-    };
-  }, []);
 
   const uniqueEvents = Array.from(
-    new Set(registrations.map((r) => r.eventName)),
+    new Set([...pendingRequests]),
   ).sort();
 
   const filteredRegistrations =
     filterEvent === "ALL"
-      ? registrations
-      : registrations.filter((r) => r.eventName === filterEvent);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#111] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (isAdmin === false) {
-    return (
-      <div className="min-h-screen bg-[#111] flex flex-col items-center justify-center p-6 font-mono relative overflow-hidden">
-        <div className="absolute inset-0 scan-lines pointer-events-none opacity-20"></div>
-        <Lock size={64} className="text-brand-red mb-6 animate-pulse" />
-        <h1 className="text-3xl md:text-5xl text-brand-red uppercase tracking-widest mb-4 font-display text-center">
-          Access Denied
-        </h1>
-        <p className="text-gray-400 text-center uppercase tracking-widest max-w-md">
-          Restricted Vault Area. Only authorized masterminds may enter this section.
-        </p>
-        <div className="flex gap-4 mt-8">
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent('request-login'))}
-            className="border border-brand-red bg-brand-red/10 px-6 py-2 text-brand-red hover:bg-brand-red hover:text-white transition-colors uppercase text-sm tracking-widest"
-          >
-            Agent Login
-          </button>
-          <button
-            onClick={() => onViewChange("hub")}
-            className="border border-white/20 px-6 py-2 text-white hover:bg-white hover:text-black transition-colors uppercase text-sm tracking-widest"
-          >
-            Return to Hub
-          </button>
-        </div>
-      </div>
-    );
-  }
+      ? pendingRequests
+      : pendingRequests.filter((r) => r === filterEvent);
 
   return (
-    <div className="min-h-screen bg-[#111]">
+    <div className="min-h-screen bg-[#111] font-body">
       <header className="hidden md:flex bg-[#000]/80 backdrop-blur-xl border-b border-brand-red/30 justify-between items-center px-10 h-16 fixed top-0 w-full z-50">
         <div className="flex items-center gap-4">
           <h1 className="font-display text-2xl uppercase tracking-tighter text-brand-red">
             ROYAL MINT PROTOCOL - ADMIN
           </h1>
+          <span className="bg-green-500/20 text-green-500 px-2 py-0.5 text-xs font-mono uppercase tracking-widest border border-green-500/50 rounded">
+            Unrestricted Mock Mode
+          </span>
         </div>
         <div className="flex items-center gap-6">
           <button className="text-brand-red-light hover:text-white transition-colors">
@@ -162,14 +54,20 @@ export default function DashboardView({ onViewChange }: DashboardViewProps) {
       <main className="md:ml-64 pt-20 md:pt-24 pb-12 px-4 md:px-8 max-w-7xl mx-auto">
         <CountdownTimer targetDate="2026-12-31T00:00:00Z" />
 
-        <section className="bg-[#151515]/80 backdrop-blur-xl border border-brand-red/20 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(139,0,0,0.1)] glow-red">
-          <div className="px-6 py-5 border-b border-brand-red/20 flex flex-col items-start gap-4 md:flex-row md:items-center justify-between bg-[#1a1a1a]">
+        <section className="bg-[#151515]/80 backdrop-blur-xl border border-brand-gold-bright/20 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(233,195,73,0.1)] glow-gold">
+          <div className="px-6 py-5 border-b border-brand-gold-bright/20 flex flex-col items-start gap-4 md:flex-row md:items-center justify-between bg-[#1a1a1a]">
             <div>
-              <h3 className="font-display text-2xl text-white uppercase tracking-wide">
-                Operation Registrations
+              <h3 className="font-display text-2xl text-white uppercase tracking-wide flex items-center gap-2">
+                Pending Registrations
+                {pendingRequests.length > 0 && (
+                  <span className="flex h-3 w-3 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-gold-bright opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-gold-bright"></span>
+                  </span>
+                )}
               </h3>
               <p className="font-mono text-xs text-gray-500 uppercase tracking-widest mt-1">
-                Total Assigned: {filteredRegistrations.length}
+                Awaiting Clearance: {filteredRegistrations.length}
               </p>
             </div>
             <div className="flex border border-white/10 rounded overflow-hidden">
@@ -199,60 +97,58 @@ export default function DashboardView({ onViewChange }: DashboardViewProps) {
                     #
                   </th>
                   <th className="p-4 font-mono text-[10px] text-gray-400 font-normal uppercase tracking-widest">
-                    Name
+                    Operative Target
                   </th>
                   <th className="p-4 font-mono text-[10px] text-gray-400 font-normal uppercase tracking-widest">
-                    Roll
+                    Operation Name
                   </th>
-                  <th className="p-4 font-mono text-[10px] text-gray-400 font-normal uppercase tracking-widest">
-                    Operation
-                  </th>
-                  <th className="p-4 font-mono text-[10px] text-gray-400 font-normal uppercase tracking-widest">
-                    Contact
-                  </th>
-                  <th className="p-4 font-mono text-[10px] text-gray-400 font-normal uppercase tracking-widest">
-                    Email
+                  <th className="p-4 font-mono text-[10px] text-gray-400 font-normal uppercase tracking-widest text-right">
+                    Actions
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRegistrations.map((reg, idx) => {
-                  const user = usersMap[reg.userId] || {};
-                  return (
-                    <tr
-                      key={reg.id}
-                      className="border-b border-white/5 hover:bg-white/5 transition-colors group"
-                    >
-                      <td className="p-4 font-mono text-xs text-brand-red opacity-80">
-                        {String(idx + 1).padStart(3, "0")}
-                      </td>
-                      <td className="p-4">
-                        <span className="font-display text-lg uppercase tracking-wider text-white group-hover:text-brand-gold transition-colors">
-                          {user.name || "Unknown"}
-                        </span>
-                      </td>
-                      <td className="p-4 font-mono text-xs text-gray-400">
-                        {user.rollNumber || "N/A"}
-                      </td>
-                      <td className="p-4 font-mono text-sm text-brand-gold-bright tracking-wider">
-                        {reg.eventName}
-                      </td>
-                      <td className="p-4 font-mono text-xs text-gray-400">
-                        {user.contact || "N/A"}
-                      </td>
-                      <td className="p-4 font-mono text-xs text-gray-500 truncate max-w-[200px]">
-                        {user.email || "N/A"}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {filteredRegistrations.map((eventName, idx) => (
+                  <tr
+                    key={`${eventName}-${idx}`}
+                    className="border-b border-white/5 hover:bg-white/5 transition-colors group"
+                  >
+                    <td className="p-4 font-mono text-xs text-brand-gold-bright opacity-80">
+                      {String(idx + 1).padStart(3, "0")}
+                    </td>
+                    <td className="p-4">
+                      <span className="font-display text-lg uppercase tracking-wider text-white group-hover:text-brand-gold transition-colors">
+                        Operative Alpha
+                      </span>
+                    </td>
+                    <td className="p-4 font-mono text-sm text-brand-gold-bright tracking-wider">
+                      {eventName}
+                    </td>
+                    <td className="p-4 flex justify-end gap-3">
+                      <button 
+                        onClick={() => approveRegistration(eventName)}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white border border-green-500/30 rounded transition-all font-mono text-xs uppercase tracking-widest"
+                      >
+                        <ShieldCheck size={14} />
+                        Approve
+                      </button>
+                      <button 
+                        onClick={() => rejectRegistration(eventName)}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/30 rounded transition-all font-mono text-xs uppercase tracking-widest"
+                      >
+                        <XCircle size={14} />
+                        Reject
+                      </button>
+                    </td>
+                  </tr>
+                ))}
                 {filteredRegistrations.length === 0 && (
                   <tr>
                     <td
-                      colSpan={6}
-                      className="p-8 text-center font-mono text-sm text-gray-500 uppercase tracking-widest"
+                      colSpan={4}
+                      className="p-12 text-center font-mono text-sm text-gray-500 uppercase tracking-widest"
                     >
-                      No operatives found for this filter.
+                      No pending requests. Vault is secure.
                     </td>
                   </tr>
                 )}

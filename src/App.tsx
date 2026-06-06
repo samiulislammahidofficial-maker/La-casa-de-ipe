@@ -12,7 +12,10 @@ import AlumniView from "./views/AlumniView";
 import ComingSoonView from "./views/ComingSoonView";
 import SignUpForm from "./components/SignUpForm";
 
-export type ViewType = "hub" | "dashboard" | "quiz" | "ticket" | "eventDetails" | "about" | "alumni" | "sponsors" | "lastYear";
+import { MockStateProvider } from "./context/MockStateContext";
+import UserDashboardView from "./views/UserDashboardView";
+
+export type ViewType = "hub" | "dashboard" | "quiz" | "ticket" | "eventDetails" | "about" | "alumni" | "sponsors" | "lastYear" | "userDashboard";
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>("hub");
@@ -29,8 +32,8 @@ export default function App() {
 
   useEffect(() => {
     const handleLoginRequest = () => setShowGlobalLogin(true);
-    window.addEventListener("request-login", handleLoginRequest);
-    return () => window.removeEventListener("request-login", handleLoginRequest);
+    window.addEventListener("request-login", handleLoginRequest as EventListener);
+    return () => window.removeEventListener("request-login", handleLoginRequest as EventListener);
   }, []);
 
   const handleIntroComplete = () => {
@@ -55,7 +58,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen relative font-body text-gray-200">
+    <MockStateProvider>
+      <div className="min-h-screen relative font-body text-gray-200">
       <div className="fixed inset-0 scan-lines z-50 mix-blend-overlay pointer-events-none"></div>
       <ParticleBackground />
 
@@ -72,6 +76,17 @@ export default function App() {
               onViewChange={navigateTo}
               onRegisterSuccess={handleRegisterSuccess}
             />
+          </motion.div>
+        )}
+        {currentView === "userDashboard" && (
+          <motion.div
+            key="userDashboard"
+            initial={{ opacity: 0, filter: "blur(8px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(8px)" }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <UserDashboardView onViewChange={navigateTo} />
           </motion.div>
         )}
         {currentView === "dashboard" && (
@@ -178,10 +193,14 @@ export default function App() {
             onClick={() => setShowGlobalLogin(false)}
           ></div>
           <div className="relative z-50 w-full max-w-md my-auto">
-            <SignUpForm onComplete={() => setShowGlobalLogin(false)} />
+            <SignUpForm onComplete={() => {
+              setShowGlobalLogin(false);
+              navigateTo("userDashboard");
+            }} />
           </div>
         </div>
       )}
     </div>
+    </MockStateProvider>
   );
 }

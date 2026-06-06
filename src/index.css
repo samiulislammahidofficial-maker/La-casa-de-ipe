@@ -17,6 +17,10 @@
   --font-mono: "JetBrains Mono", monospace;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: var(--color-bg-base);
   color: #e5e5e5;

@@ -3,10 +3,12 @@ import TopNav from "../components/TopNav";
 import AccessPassModal from "../components/AccessPassModal";
 import BlueprintReveal from "../components/BlueprintReveal";
 import EventCards from "../components/EventCards";
+import { ViewType } from "../App";
+import bgImage from "../../picture/mechasamnerpic.png.png";
 
 interface HubViewProps {
   onViewChange: (
-    view: "hub" | "dashboard" | "quiz" | "ticket" | "eventDetails",
+    view: ViewType,
     eventId?: number,
   ) => void;
   onRegisterSuccess?: (eventId: number) => void;
@@ -66,15 +68,49 @@ export default function HubView({
       </section>
 
       {/* Events Board */}
-      <section className="py-24 relative overflow-hidden bg-[#0c0c0c]">
+      <section id="events-section" className="py-24 relative overflow-hidden bg-[#0c0c0c]">
         <EventCards
           onRegisterSuccess={onRegisterSuccess}
           onViewChange={onViewChange}
         />
       </section>
 
+      {/* Department Overview */}
+      <section className="relative py-32 overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40"
+          style={{ backgroundImage: `url(${bgImage})` }}
+        ></div>
+        <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/80 via-black/50 to-black/80 pointer-events-none"></div>
+
+        <div className="relative z-10 max-w-5xl mx-auto px-6 lg:px-12">
+          <header className="mb-12 text-center md:text-left">
+            <h2 className="font-display text-4xl md:text-5xl uppercase tracking-widest text-brand-red glow-red-text mb-4">
+              Department Overview
+            </h2>
+            <div className="h-1 w-24 bg-brand-red glow-red mx-auto md:mx-0"></div>
+          </header>
+
+          <div className="space-y-8 font-body text-gray-300 text-lg md:text-xl leading-relaxed tracking-wide bg-[#111]/60 backdrop-blur-md p-8 md:p-12 rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.8)]">
+            <p>
+              The Department of Industrial and Production Engineering (IPE) at BUET is one of the leading departments in Bangladesh, specializing in industrial engineering, production systems, and operations research. Established as part of Bangladesh University of Engineering and Technology (BUET), the IPE department has significantly contributed to the advancement of industrial practices in the country.
+            </p>
+            <p>
+              With a dynamic student body of approximately 600 students, the department offers a comprehensive undergraduate program and 5 postgraduate batches, reflecting BUET's commitment to providing high-quality education in the field of industrial engineering. The department fosters a collaborative learning environment where students are equipped with the necessary skills to solve complex industrial problems and contribute effectively to both national and global industries.
+            </p>
+            <p>
+              Each year, students are admitted to the department through a highly competitive selection process, reinforcing the department's commitment to attracting the best minds in the country. The IPE department boasts a faculty of experienced professors and researchers who guide students through a rigorous curriculum and provide opportunities for real-world applications of industrial engineering principles.
+            </p>
+            <p>
+              The IPE department at BUET has a robust alumni network, with graduates making significant contributions across industries globally. Many alumni are working in top organizations in countries such as the USA, Canada, the UK, and various countries in the Middle East, as well as contributing to the development of industrial practices in Bangladesh.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="border-t border-white/10 bg-[#111] py-16 px-6">
+      <footer id="contact-section" className="border-t border-white/10 bg-[#111] py-16 px-6">
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-12">
           {/* Organizer Logos */}
           <div className="flex flex-row gap-6 md:gap-8 items-center justify-start w-full mb-12">

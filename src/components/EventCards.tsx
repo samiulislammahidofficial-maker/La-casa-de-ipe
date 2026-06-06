@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { ViewType } from "../App";
 import Fuse from "fuse.js";
 import {
   Target,
@@ -37,19 +38,17 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-import {
-  auth,
-  db,
-  onAuthStateChanged,
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc
-} from "../lib/firebaseUtils";
-import bgImage from "@/picture/carousel-bg.png";
+import bgImage from "../../picture/carousel-bg.png.png";
+import { useMockState } from "../context/MockStateContext";
 
 export const EVENTS = [
+  {
+    id: 999,
+    title: "Treasure Hunt Temporary",
+    icon: Map,
+    targetDate: null,
+    desc: "A temporary mock event to test the new mock authentication and registration approval pipeline. Target acquisition and asset extraction is pending admin clearance.",
+  },
   {
     id: 1,
     title: "Treasure Hunt",
@@ -248,10 +247,9 @@ export default function EventCards({
 }: {
   onLoginRequest?: () => void;
   onRegisterSuccess?: (eventId: number) => void;
-  onViewChange?: (view: 'hub' | 'dashboard' | 'quiz' | 'ticket' | 'eventDetails', eventId?: number) => void;
+  onViewChange?: (view: ViewType, eventId?: number) => void;
 }) {
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [registrations, setRegistrations] = useState<string[]>([]);
+  const { user, pendingRequests, approvedRequests, requestRegistration } = useMockState();
   const [loadingEvent, setLoadingEvent] = useState<number | null>(null);
 
   // Search & Sorting
@@ -261,29 +259,6 @@ export default function EventCards({
 
   // Touch handling
   const touchStartX = useRef<number | null>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      if (user) {
-        try {
-          const regQuery = query(
-            collection(db, "registrations"),
-            where("userId", "==", user.uid),
-          );
-          const regSnapshot = await getDocs(regQuery);
-          const userRegs = regSnapshot.docs.map((doc) => doc.data().eventName);
-          setRegistrations(userRegs);
-        } catch (error) {
-          console.error("Error fetching registrations:", error);
-        }
-      } else {
-        setRegistrations([]);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   const fuse = useMemo(() => new Fuse(EVENTS, {
     keys: ["title"],
@@ -325,7 +300,7 @@ export default function EventCards({
   const handleRegister = async (eventId: number, eventTitle: string) => {
     if (navigator.vibrate) navigator.vibrate(30);
 
-    if (!currentUser) {
+    if (!user) {
       if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
       if (onLoginRequest) {
         onLoginRequest();
@@ -335,28 +310,19 @@ export default function EventCards({
       return;
     }
 
-    setLoadingEvent(eventId);
-    try {
-      if (registrations.includes(eventTitle)) {
-        if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-        if (onRegisterSuccess) onRegisterSuccess(eventId);
-        setLoadingEvent(null);
-        return;
-      }
-      await addDoc(collection(db, "registrations"), {
-        userId: currentUser.uid,
-        eventName: eventTitle,
-        timestamp: new Date(),
-      });
-      if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
-      setRegistrations([...registrations, eventTitle]);
-      if (onRegisterSuccess) onRegisterSuccess(eventId);
-    } catch (error) {
-      console.error("Error registering:", error);
+    if (approvedRequests.includes(eventTitle) || pendingRequests.includes(eventTitle)) {
       if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-      alert("Failed to register. Access denied.");
+      return;
     }
-    setLoadingEvent(null);
+
+    setLoadingEvent(eventId);
+    // Simulate network delay
+    setTimeout(() => {
+      requestRegistration(eventTitle);
+      if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
+      if (onRegisterSuccess) onRegisterSuccess(eventId);
+      setLoadingEvent(null);
+    }, 600);
   };
 
   const nextCard = () => {
@@ -495,7 +461,8 @@ export default function EventCards({
               const borderClass = isCurrent 
                 ? (isRed ? "border-brand-red shadow-[0_0_50px_rgba(139,0,0,0.4)]" : "border-brand-gold-bright shadow-[0_0_50px_rgba(233,195,73,0.3)]")
                 : "border-white/10";
-              const isRegistered = registrations.includes(event.title);
+              const isRegistered = approvedRequests.includes(event.title);
+              const isPending = pendingRequests.includes(event.title);
 
               return (
                 <div
@@ -536,13 +503,15 @@ export default function EventCards({
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleRegister(event.id, event.title); }}
-                        disabled={isRegistered || loadingEvent === event.id}
-                        className={`w-full py-4 border rounded-lg ${isRegistered ? "border-brand-red bg-brand-red/20 text-brand-red opacity-80 cursor-not-allowed" : isRed ? "border-brand-red text-brand-red hover:bg-brand-red hover:text-white shadow-[0_0_15px_rgba(139,0,0,0)] hover:shadow-[0_0_20px_rgba(139,0,0,0.4)]" : "border-brand-gold-bright text-brand-gold-bright hover:bg-brand-gold-bright hover:text-[#111] shadow-[0_0_15px_rgba(233,195,73,0)] hover:shadow-[0_0_20px_rgba(233,195,73,0.4)]"} font-mono text-sm font-bold uppercase tracking-widest transition-all`}
+                        disabled={isRegistered || isPending || loadingEvent === event.id}
+                        className={`w-full py-4 border rounded-lg ${(isRegistered || isPending) ? "border-brand-red bg-brand-red/20 text-brand-red opacity-80 cursor-not-allowed" : isRed ? "border-brand-red text-brand-red hover:bg-brand-red hover:text-white shadow-[0_0_15px_rgba(139,0,0,0)] hover:shadow-[0_0_20px_rgba(139,0,0,0.4)]" : "border-brand-gold-bright text-brand-gold-bright hover:bg-brand-gold-bright hover:text-[#111] shadow-[0_0_15px_rgba(233,195,73,0)] hover:shadow-[0_0_20px_rgba(233,195,73,0.4)]"} font-mono text-sm font-bold uppercase tracking-widest transition-all`}
                       >
                         {loadingEvent === event.id
                           ? "Connecting..."
                           : isRegistered
                             ? "Already Assigned"
+                            : isPending 
+                            ? "Request Sent"
                             : "Join Operation"}
                       </button>
                     </div>
