@@ -5,6 +5,8 @@ import BlueprintReveal from "../components/BlueprintReveal";
 import EventCards from "../components/EventCards";
 import { ViewType } from "../App";
 import bgImage from "../../picture/mechasamnerpic.png.png";
+import heistBg from "../../picture/heist-bg.png";
+
 
 interface HubViewProps {
   onViewChange: (
@@ -44,7 +46,7 @@ export default function HubView({
 
           <div className="w-48 h-48 md:w-64 md:h-64 mb-8 rounded-full overflow-hidden border-4 border-brand-red shadow-[0_0_50px_rgba(139,0,0,0.5)]">
             <img
-              src="https://i.postimg.cc/fRvczJRF/708852684-1373519991306664-7382593907580718207-n.jpg"
+              src={heistBg}
               alt="La Casa De IPE Event Logo"
               className="w-full h-full object-cover"
             />

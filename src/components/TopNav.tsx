@@ -3,6 +3,8 @@ import UserProfile from "./UserProfile";
 import { useState, useEffect } from "react";
 import { ViewType } from "../App";
 import { useMockState } from "../context/MockStateContext";
+import heistBg from "../../picture/heist-bg.png";
+
 
 interface TopNavProps {
   onViewChange: (
@@ -95,7 +97,7 @@ export default function TopNav({ onViewChange, activeView }: TopNavProps) {
           >
             <div className="w-12 h-12 rounded-full overflow-hidden border border-brand-red/50 group-hover:border-brand-red transition-all duration-500 group-hover:shadow-[0_0_20px_rgba(139,0,0,0.5)]">
               <img
-                src="https://i.postimg.cc/fRvczJRF/708852684-1373519991306664-7382593907580718207-n.jpg"
+                src={heistBg}
                 alt="La Casa De IPE Event Logo"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />

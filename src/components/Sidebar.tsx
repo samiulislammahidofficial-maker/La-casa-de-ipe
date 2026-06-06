@@ -1,4 +1,6 @@
 import { LayoutDashboard, BarChart2, Lock, Eye, Truck, Settings, HelpCircle } from 'lucide-react';
+import heistBg from "../../picture/heist-bg.png";
+
 
 interface SidebarProps {
   onViewChange: (view: 'hub' | 'dashboard' | 'quiz') => void;
@@ -13,7 +15,7 @@ export default function Sidebar({ onViewChange }: SidebarProps) {
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-full overflow-hidden border border-brand-red-light/30">
             <img 
-              src="https://i.postimg.cc/fRvczJRF/708852684-1373519991306664-7382593907580718207-n.jpg" 
+              src={heistBg} 
               alt="La Casa De IPE Event Logo" 
               className="w-full h-full object-cover" 
             />
