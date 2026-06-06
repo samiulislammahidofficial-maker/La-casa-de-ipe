@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile containing registration details.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "department": { "type": "string", "enum": ["IPE"] },
+        "batch": { "type": "string", "enum": ["25"] },
+        "rollNumber": { "type": "string" },
+        "hall": { "type": "string" },
+        "contactNumber": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "organizer", "admin"] },
+        "createdAt": { "type": "timestamp" }
+      },
+      "required": ["name", "email", "role"]
+    },
+    "Registration": {
+      "title": "Event Registration",
+      "description": "Record of a user registering for a specific event.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "eventName": { "type": "string" },
+        "createdAt": { "type": "timestamp" }
+      },
+      "required": ["userId", "eventName", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles. ID matches Firebase Auth UID."
+    },
+    "/registrations/{registrationId}": {
+      "schema": { "$ref": "#/entities/Registration" },
+      "description": "Event registrations."
+    }
+  }
+}
