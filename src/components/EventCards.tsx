@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import Fuse from "fuse.js";
 import {
   Target,
   Map,
@@ -28,10 +29,25 @@ import {
   Activity,
   Star,
   Eye,
+  Search,
+  ArrowDownAZ,
+  ArrowUpZA,
+  CalendarDays,
+  Calendar,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
-import { auth, db } from "../lib/firebaseUtils";
-import { onAuthStateChanged } from "firebase/auth";
-import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import {
+  auth,
+  db,
+  onAuthStateChanged,
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc
+} from "../lib/firebaseUtils";
+import bgImage from "@/picture/carousel-bg.png";
 
 export const EVENTS = [
   {
@@ -238,6 +254,14 @@ export default function EventCards({
   const [registrations, setRegistrations] = useState<string[]>([]);
   const [loadingEvent, setLoadingEvent] = useState<number | null>(null);
 
+  // Search & Sorting
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<"date-asc" | "date-desc" | "alpha-asc" | "alpha-desc">("date-asc");
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Touch handling
+  const touchStartX = useRef<number | null>(null);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
@@ -260,6 +284,43 @@ export default function EventCards({
 
     return () => unsubscribe();
   }, []);
+
+  const fuse = useMemo(() => new Fuse(EVENTS, {
+    keys: ["title"],
+    threshold: 0.3,
+  }), []);
+
+  const processedEvents = useMemo(() => {
+    let results = EVENTS;
+    if (searchQuery.trim()) {
+      results = fuse.search(searchQuery).map(res => res.item);
+    }
+
+    results = [...results].sort((a, b) => {
+      if (sortOrder === "alpha-asc") {
+        return a.title.localeCompare(b.title);
+      } else if (sortOrder === "alpha-desc") {
+        return b.title.localeCompare(a.title);
+      } else {
+        const dateA = a.targetDate ? new Date(a.targetDate).getTime() : Infinity;
+        const dateB = b.targetDate ? new Date(b.targetDate).getTime() : Infinity;
+        if (sortOrder === "date-asc") {
+          return dateA - dateB;
+        } else {
+          if (a.targetDate === null && b.targetDate === null) return 0;
+          if (a.targetDate === null) return 1;
+          if (b.targetDate === null) return -1;
+          return dateB - dateA;
+        }
+      }
+    });
+
+    return results;
+  }, [searchQuery, sortOrder, fuse]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [processedEvents.length]);
 
   const handleRegister = async (eventId: number, eventTitle: string) => {
     if (navigator.vibrate) navigator.vibrate(30);
@@ -298,78 +359,211 @@ export default function EventCards({
     setLoadingEvent(null);
   };
 
+  const nextCard = () => {
+    if (activeIndex < processedEvents.length - 1) setActiveIndex(prev => prev + 1);
+  };
+
+  const prevCard = () => {
+    if (activeIndex > 0) setActiveIndex(prev => prev - 1);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+
+    if (diff > 50) {
+      nextCard();
+    } else if (diff < -50) {
+      prevCard();
+    }
+    touchStartX.current = null;
+  };
+
   return (
-    <div className="w-full relative mt-16 px-4">
-      <div className="flex items-center gap-4 mb-6 max-w-7xl mx-auto px-4 lg:px-8">
-        <h2 className="font-display text-2xl uppercase tracking-widest text-white decoration-brand-red decoration-2 underline-offset-8 underline">
-          Current Operations
+    <div className="w-full relative py-16 px-4 pb-20 mt-16 overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60 mix-blend-luminosity"
+        style={{ backgroundImage: `url(${bgImage})` }}
+      ></div>
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#111] via-[rgba(17,17,17,0.8)] to-[#111] pointer-events-none"></div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 mb-8">
+        <h2 className="font-display text-3xl uppercase tracking-widest text-white decoration-brand-red decoration-2 underline-offset-8 underline mb-8 drop-shadow-lg">
+          Operations Intel
         </h2>
-      </div>
 
-      {/* Grid Container */}
-      <div className="w-full overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-12 cursor-grab active:cursor-grabbing">
-        <div className="flex gap-6 px-4 lg:px-8 w-max mx-auto md:mx-0">
-          {EVENTS.map((event, index) => {
-            const Icon = event.icon;
-            const isRed = index % 2 === 0;
-            const colorClass = isRed
-              ? "text-brand-red"
-              : "text-brand-gold-bright";
-            const borderClass = isRed
-              ? "border-brand-red/30 hover:border-brand-red"
-              : "border-brand-gold-bright/30 hover:border-brand-gold-bright";
-            const glowClass = isRed
-              ? "hover:shadow-[0_0_20px_rgba(139,0,0,0.4)] hover:-translate-y-2 hover:scale-[1.02] z-0 hover:z-10"
-              : "hover:shadow-[0_0_20px_rgba(233,195,73,0.3)] hover:-translate-y-2 hover:scale-[1.02] z-0 hover:z-10";
+        {/* Search & Sort Controls */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-[#151515]/80 p-4 border border-brand-red/20 rounded-xl backdrop-blur-xl shadow-[0_0_20px_rgba(139,0,0,0.1)]">
+          <div className="relative w-full md:w-[400px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Fuzzy Search Operations..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-black/40 border border-brand-red/30 rounded-lg pl-10 pr-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-brand-red focus:shadow-[0_0_15px_rgba(139,0,0,0.3)] transition-all"
+            />
+          </div>
 
-            const isRegistered = registrations.includes(event.title);
-
-            return (
-              <div
-                key={event.id}
-                className={`snap-center shrink-0 w-[280px] h-[340px] bg-[#1a1a1a]/95 backdrop-blur-xl border ${borderClass} p-6 flex flex-col transition-all duration-300 group ${glowClass} relative overflow-hidden rounded-lg`}
-              >
-                <div className="flex flex-col h-full relative z-10 w-full">
-                  <div className="mb-auto">
-                    <Icon
-                      size={40}
-                      className={`${colorClass} mb-4 transform group-hover:scale-110 transition-transform`}
-                    />
-                    <h3 className="font-display text-xl text-white uppercase mb-2 min-h-[56px] flex items-center leading-tight">
-                      {event.title}
-                    </h3>
-                  </div>
-
-                  <div className="flex flex-col gap-3 mt-4">
-                    <button
-                      onClick={() => onViewChange?.('eventDetails', event.id)}
-                      className={`w-full py-2 border border-white/20 text-white hover:bg-white/10 font-mono text-xs uppercase tracking-widest transition-colors shadow-sm`}
-                    >
-                      View Details
-                    </button>
-                    <button
-                      onClick={() => handleRegister(event.id, event.title)}
-                      disabled={isRegistered || loadingEvent === event.id}
-                      className={`w-full py-2 border ${isRegistered ? "border-brand-red bg-brand-red text-white opacity-50 cursor-not-allowed" : isRed ? "border-brand-red text-brand-red hover:bg-brand-red hover:text-white" : "border-brand-gold-bright text-brand-gold-bright hover:bg-brand-gold-bright hover:text-[#111]"} font-mono text-xs uppercase tracking-widest transition-colors shadow-sm`}
-                    >
-                      {loadingEvent === event.id
-                        ? "Assigning..."
-                        : isRegistered
-                          ? "Registered"
-                          : "Register"}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Minimal tech background element */}
-                <div className="absolute top-4 right-4 font-mono text-[10px] text-gray-600 opacity-30 pointer-events-none">
-                  #OP-{String(event.id).padStart(3, "0")}
-                </div>
-              </div>
-            );
-          })}
+          <div className="flex flex-wrap gap-3">
+            <button 
+              onClick={() => setSortOrder(prev => prev === 'date-asc' ? 'date-desc' : 'date-asc')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all ${sortOrder.startsWith('date') ? 'bg-brand-red/20 text-brand-red border border-brand-red/50 shadow-[0_0_15px_rgba(139,0,0,0.2)]' : 'bg-black/40 text-gray-400 border border-white/10 hover:border-white/30 hover:bg-white/5'}`}
+            >
+              <Calendar size={16} />
+              {sortOrder === 'date-desc' ? 'Newest First' : 'Chronological'}
+            </button>
+            <button 
+              onClick={() => setSortOrder(prev => prev === 'alpha-asc' ? 'alpha-desc' : 'alpha-asc')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all ${sortOrder.startsWith('alpha') ? 'bg-brand-gold-bright/20 text-brand-gold-bright border border-brand-gold-bright/50 shadow-[0_0_15px_rgba(233,195,73,0.2)]' : 'bg-black/40 text-gray-400 border border-white/10 hover:border-white/30 hover:bg-white/5'}`}
+            >
+              {sortOrder === 'alpha-desc' ? <ArrowUpZA size={16} /> : <ArrowDownAZ size={16} />}
+              Alphabetical
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* 3D Carousel Container */}
+      {processedEvents.length > 0 ? (
+        <div className="relative w-full max-w-[340px] md:max-w-[400px] h-[550px] mx-auto flex justify-center items-center perspective-[1200px] my-12">
+          
+          <button 
+            onClick={prevCard} 
+            disabled={activeIndex === 0}
+            className={`absolute -left-12 md:-left-24 z-50 p-4 rounded-full border transition-all duration-300 ${activeIndex === 0 ? 'border-white/10 text-white/20 cursor-not-allowed scale-90' : 'border-brand-red/50 text-brand-red hover:bg-brand-red/20 hover:scale-110 shadow-[0_0_20px_rgba(139,0,0,0.3)]'} bg-[#111]/80 backdrop-blur`}
+          >
+            <ChevronLeft size={28} />
+          </button>
+          
+          <button 
+            onClick={nextCard} 
+            disabled={activeIndex === processedEvents.length - 1}
+            className={`absolute -right-12 md:-right-24 z-50 p-4 rounded-full border transition-all duration-300 ${activeIndex === processedEvents.length - 1 ? 'border-white/10 text-white/20 cursor-not-allowed scale-90' : 'border-brand-red/50 text-brand-red hover:bg-brand-red/20 hover:scale-110 shadow-[0_0_20px_rgba(139,0,0,0.3)]'} bg-[#111]/80 backdrop-blur`}
+          >
+            <ChevronRight size={28} />
+          </button>
+
+          <div 
+            className="relative w-full h-full flex justify-center items-center preserve-3d"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            {processedEvents.map((event, i) => {
+              const isCurrent = i === activeIndex;
+              const offset = i - activeIndex;
+
+              if (Math.abs(offset) > 4) return null;
+
+              const isPast = offset < 0;
+
+              let zIndex = 40 - Math.abs(offset);
+              let transform = "";
+              let opacity = 1;
+              let filter = "blur(0px)";
+
+              if (isPast) {
+                // Swiped out left
+                transform = `translateX(-150%) scale(0.7) rotateY(-30deg)`;
+                opacity = 0;
+                filter = "blur(20px)";
+              } else if (isCurrent) {
+                // Active Center
+                transform = `translateX(0) scale(1) translateY(0) rotateY(0deg)`;
+                opacity = 1;
+                filter = "blur(0px)";
+                zIndex = 50;
+              } else {
+                // Stacked right behind
+                const xOffset = offset * 30;
+                const yOffset = offset * -15;
+                const scale = 1 - offset * 0.06;
+                transform = `translateX(${xOffset}px) translateY(${yOffset}px) scale(${scale})`;
+                opacity = Math.max(0, 1 - offset * 0.2);
+                filter = `blur(${offset * 3}px)`;
+              }
+
+              const Icon = event.icon;
+              const isRed = i % 2 === 0;
+              const colorClass = isRed ? "text-brand-red" : "text-brand-gold-bright";
+              const borderClass = isCurrent 
+                ? (isRed ? "border-brand-red shadow-[0_0_50px_rgba(139,0,0,0.4)]" : "border-brand-gold-bright shadow-[0_0_50px_rgba(233,195,73,0.3)]")
+                : "border-white/10";
+              const isRegistered = registrations.includes(event.title);
+
+              return (
+                <div
+                  key={event.id}
+                  onClick={() => {
+                    if (offset > 0) setActiveIndex(i);
+                  }}
+                  className={`absolute w-[320px] md:w-[360px] h-[480px] bg-[#151515]/95 backdrop-blur-2xl border ${borderClass} p-8 flex flex-col transition-all duration-700 cubic-bezier(0.25, 1, 0.5, 1) rounded-2xl ${isCurrent ? 'cursor-default' : 'cursor-pointer hover:-translate-y-4'}`}
+                  style={{ transform, zIndex, opacity, filter }}
+                >
+                  <div className="flex flex-col h-full relative z-10 w-full">
+                    <div className="mb-auto">
+                      <div className={`p-4 rounded-xl inline-block bg-white/5 border border-white/5 mb-6 transition-all duration-500 ${isCurrent ? 'shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]' : ''}`}>
+                        <Icon size={48} className={`${colorClass} ${isCurrent ? 'animate-pulse' : ''}`} />
+                      </div>
+                      <h3 className="font-display text-3xl text-white uppercase mb-3 leading-tight tracking-wide">
+                        {event.title}
+                      </h3>
+                      {event.targetDate ? (
+                        <p className="font-mono text-sm text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+                          <CalendarDays size={16} className={colorClass} />
+                          {new Date(event.targetDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      ) : (
+                        <p className="font-mono text-sm text-gray-500 uppercase tracking-widest mt-2 flex items-center gap-2">
+                          <CalendarDays size={16} />
+                          TBA
+                        </p>
+                      )}
+                    </div>
+
+                    <div className={`flex flex-col gap-4 mt-8 ${!isCurrent && 'opacity-0 pointer-events-none'} transition-opacity duration-500 delay-300`}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onViewChange?.('eventDetails', event.id); }}
+                        className={`w-full py-4 border border-white/20 text-white hover:bg-white/10 font-mono text-sm uppercase tracking-widest transition-all rounded-lg`}
+                      >
+                        Access Intel
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleRegister(event.id, event.title); }}
+                        disabled={isRegistered || loadingEvent === event.id}
+                        className={`w-full py-4 border rounded-lg ${isRegistered ? "border-brand-red bg-brand-red/20 text-brand-red opacity-80 cursor-not-allowed" : isRed ? "border-brand-red text-brand-red hover:bg-brand-red hover:text-white shadow-[0_0_15px_rgba(139,0,0,0)] hover:shadow-[0_0_20px_rgba(139,0,0,0.4)]" : "border-brand-gold-bright text-brand-gold-bright hover:bg-brand-gold-bright hover:text-[#111] shadow-[0_0_15px_rgba(233,195,73,0)] hover:shadow-[0_0_20px_rgba(233,195,73,0.4)]"} font-mono text-sm font-bold uppercase tracking-widest transition-all`}
+                      >
+                        {loadingEvent === event.id
+                          ? "Connecting..."
+                          : isRegistered
+                            ? "Already Assigned"
+                            : "Join Operation"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Aesthetic card accents */}
+                  <div className="absolute top-8 right-8 font-mono text-xs text-gray-600/50 pointer-events-none rotate-90 origin-right tracking-[0.2em]">
+                    OP-{String(event.id).padStart(3, "0")}
+                  </div>
+                  <div className={`absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t ${isRed ? 'from-brand-red/10' : 'from-brand-gold-bright/10'} to-transparent opacity-50 rounded-b-2xl pointer-events-none transition-opacity duration-500 ${isCurrent ? 'opacity-100' : 'opacity-0'}`}></div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="w-full text-center py-32 border border-white/5 rounded-2xl bg-black/20">
+          <Search size={48} className="mx-auto text-gray-600 mb-6" />
+          <p className="font-mono text-gray-500 uppercase tracking-widest text-lg">No matching operations found in database.</p>
+        </div>
+      )}
     </div>
   );
 }

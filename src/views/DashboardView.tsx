@@ -10,17 +10,18 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import CountdownTimer from "../components/CountdownTimer";
-import { auth, db } from "../lib/firebaseUtils";
-import { onAuthStateChanged } from "firebase/auth";
 import {
+  auth,
+  db,
+  onAuthStateChanged,
   collection,
   doc,
   getDoc,
   getDocs,
   onSnapshot,
   query,
-  orderBy,
-} from "firebase/firestore";
+  orderBy
+} from "../lib/firebaseUtils";
 
 interface DashboardViewProps {
   onViewChange: (view: "hub" | "dashboard" | "quiz" | "ticket") => void;

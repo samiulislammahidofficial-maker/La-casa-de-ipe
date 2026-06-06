@@ -1,13 +1,14 @@
 import { useForm } from "react-hook-form";
 import {
+  auth,
+  createUserDocument,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInAnonymously,
   GoogleAuthProvider,
   FacebookAuthProvider,
-  signInWithPopup,
-} from "firebase/auth";
-import { auth, createUserDocument } from "../lib/firebaseUtils";
+  signInWithPopup
+} from "../lib/firebaseUtils";
 import { useState } from "react";
 
 type SignUpFormData = {

@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
-import { auth, db } from '../lib/firebaseUtils';
-import { onAuthStateChanged } from 'firebase/auth';
-import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import {
+  auth,
+  db,
+  onAuthStateChanged,
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc
+} from '../lib/firebaseUtils';
 import { ChevronLeft } from 'lucide-react';
 import CountdownTimer from '../components/CountdownTimer';
 import { EVENTS } from '../components/EventCards';

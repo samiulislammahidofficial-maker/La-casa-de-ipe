@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { User, LogOut, X } from "lucide-react";
-import { auth, db } from "../lib/firebaseUtils";
-import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
+  auth,
+  db,
+  onAuthStateChanged,
+  signOut,
   doc,
   getDoc,
   collection,
   query,
   where,
-  getDocs,
-} from "firebase/firestore";
+  getDocs
+} from "../lib/firebaseUtils";
 import SignUpForm from "./SignUpForm";
 
 interface UserData {

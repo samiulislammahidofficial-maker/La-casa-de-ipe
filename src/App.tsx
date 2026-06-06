@@ -7,12 +7,15 @@ import ParticleBackground from "./components/ParticleBackground";
 import HeistQuizDashboard from "./components/HeistQuizDashboard";
 import TicketView from "./views/TicketView";
 import EventDetailsView from "./views/EventDetailsView";
+import AboutUsView from "./views/AboutUsView";
+import AlumniView from "./views/AlumniView";
+import ComingSoonView from "./views/ComingSoonView";
 import SignUpForm from "./components/SignUpForm";
 
+export type ViewType = "hub" | "dashboard" | "quiz" | "ticket" | "eventDetails" | "about" | "alumni" | "sponsors" | "lastYear";
+
 export default function App() {
-  const [currentView, setCurrentView] = useState<
-    "hub" | "dashboard" | "quiz" | "ticket" | "eventDetails"
-  >("hub");
+  const [currentView, setCurrentView] = useState<ViewType>("hub");
   const [currentTicketEventId, setCurrentTicketEventId] = useState<
     number | null
   >(null);
@@ -35,7 +38,7 @@ export default function App() {
     setIntroFinished(true);
   };
 
-  const navigateTo = (view: "hub" | "dashboard" | "quiz" | "ticket" | "eventDetails", eventId?: number) => {
+  const navigateTo = (view: ViewType, eventId?: number) => {
     if (view === "eventDetails" && eventId) {
       setCurrentDetailsEventId(eventId);
     }
@@ -120,6 +123,50 @@ export default function App() {
               onViewChange={navigateTo} 
               onRegisterSuccess={handleRegisterSuccess} 
             />
+          </motion.div>
+        )}
+        {currentView === "about" && (
+          <motion.div
+            key="about"
+            initial={{ opacity: 0, filter: "blur(8px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(8px)" }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <AboutUsView onViewChange={navigateTo} />
+          </motion.div>
+        )}
+        {currentView === "alumni" && (
+          <motion.div
+            key="alumni"
+            initial={{ opacity: 0, filter: "blur(8px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(8px)" }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <AlumniView onViewChange={navigateTo} />
+          </motion.div>
+        )}
+        {currentView === "sponsors" && (
+          <motion.div
+            key="sponsors"
+            initial={{ opacity: 0, filter: "blur(8px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(8px)" }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <ComingSoonView title="Sponsors" onViewChange={navigateTo} />
+          </motion.div>
+        )}
+        {currentView === "lastYear" && (
+          <motion.div
+            key="lastYear"
+            initial={{ opacity: 0, filter: "blur(8px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(8px)" }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <ComingSoonView title="Last Year Event" onViewChange={navigateTo} />
           </motion.div>
         )}
       </AnimatePresence>

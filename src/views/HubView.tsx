@@ -77,12 +77,12 @@ export default function HubView({
       <footer className="border-t border-white/10 bg-[#111] py-16 px-6">
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-12">
           {/* Organizer Logos */}
-          <div className="flex flex-col md:flex-row gap-12 md:gap-8 items-center justify-center w-full">
-            <div className="flex flex-col items-center">
-              <span className="font-mono text-xs text-gray-500 tracking-widest uppercase mb-4">
+          <div className="flex flex-row gap-6 md:gap-8 items-center justify-start w-full mb-12">
+            <div className="flex flex-col items-start">
+              <span className="font-mono text-[10px] md:text-xs text-gray-500 tracking-widest uppercase mb-3">
                 Organized By
               </span>
-              <div className="bg-white/5 p-2 rounded-full border border-white/10 flex items-center justify-center w-28 h-28 md:w-36 md:h-36 overflow-hidden">
+              <div className="bg-white/5 p-2 rounded-full border border-white/10 flex items-center justify-center w-20 h-20 md:w-28 md:h-28 overflow-hidden shrink-0">
                 <img
                   src="https://i.postimg.cc/tJyR4CTd/1779890856249.png"
                   alt="BUET IPE 24 Logo"
@@ -91,15 +91,15 @@ export default function HubView({
               </div>
             </div>
 
-            <span className="font-display text-3xl text-brand-red opacity-50 px-4 hidden md:block">
+            <span className="font-display text-2xl text-brand-red opacity-50 px-2 shrink-0">
               ×
             </span>
 
-            <div className="flex flex-col items-center mt-6 md:mt-0">
-              <span className="font-mono text-xs text-gray-500 tracking-widest uppercase mb-4">
+            <div className="flex flex-col items-start">
+              <span className="font-mono text-[10px] md:text-xs text-gray-500 tracking-widest uppercase mb-3">
                 In Association With
               </span>
-              <div className="bg-white/5 p-2 rounded-full flex items-center justify-center border border-white/10 w-28 h-28 md:w-36 md:h-36 overflow-hidden">
+              <div className="bg-white/5 p-2 rounded-full flex items-center justify-center border border-white/10 w-20 h-20 md:w-28 md:h-28 overflow-hidden shrink-0">
                 <img
                   src="https://i.postimg.cc/VLk1Ghb5/466001923-558542163817971-8889883612451577029-n.jpg"
                   alt="AIPE Logo"
@@ -107,6 +107,9 @@ export default function HubView({
                 />
               </div>
             </div>
+            
+            {/* Empty space reserved for future sponsor logos on the right */}
+            <div className="flex-1"></div>
           </div>
 
           {/* Footer Bottom Setup */}

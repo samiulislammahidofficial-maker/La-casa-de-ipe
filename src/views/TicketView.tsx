@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
-import { auth, db } from "../lib/firebaseUtils";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  auth,
+  db,
+  onAuthStateChanged,
+  doc,
+  getDoc
+} from "../lib/firebaseUtils";
 import { ChevronLeft, QrCode } from "lucide-react";
 
 interface TicketViewProps {
