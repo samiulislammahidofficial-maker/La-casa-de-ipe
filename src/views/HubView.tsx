@@ -84,13 +84,18 @@ export default function HubView({
               <span className="font-mono text-[10px] md:text-xs text-gray-500 tracking-widest uppercase mb-3">
                 Organized By
               </span>
-              <div className="bg-white/5 p-2 rounded-full border border-white/10 flex items-center justify-center w-20 h-20 md:w-28 md:h-28 overflow-hidden shrink-0">
+              <a
+                href="https://www.facebook.com/profile.php?id=61575253397638"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white/5 p-2 rounded-full border border-white/10 flex items-center justify-center w-20 h-20 md:w-28 md:h-28 overflow-hidden shrink-0 cursor-pointer hover:border-brand-red/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red"
+              >
                 <img
                   src="https://i.postimg.cc/tJyR4CTd/1779890856249.png"
                   alt="BUET IPE 24 Logo"
                   className="w-full h-full object-cover hover:scale-105 transition-transform"
                 />
-              </div>
+              </a>
             </div>
 
             <span className="font-display text-2xl text-brand-red opacity-50 px-2 shrink-0">
@@ -101,13 +106,18 @@ export default function HubView({
               <span className="font-mono text-[10px] md:text-xs text-gray-500 tracking-widest uppercase mb-3">
                 In Association With
               </span>
-              <div className="bg-white/5 p-2 rounded-full flex items-center justify-center border border-white/10 w-20 h-20 md:w-28 md:h-28 overflow-hidden shrink-0">
+              <a
+                href="https://www.facebook.com/aipebuet2023"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white/5 p-2 rounded-full flex items-center justify-center border border-white/10 w-20 h-20 md:w-28 md:h-28 overflow-hidden shrink-0 cursor-pointer hover:border-brand-red/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red"
+              >
                 <img
                   src="https://i.postimg.cc/VLk1Ghb5/466001923-558542163817971-8889883612451577029-n.jpg"
                   alt="AIPE Logo"
                   className="w-full h-full object-cover hover:scale-105 transition-transform"
                 />
-              </div>
+              </a>
             </div>
             
             {/* Empty space reserved for future sponsor logos on the right */}
