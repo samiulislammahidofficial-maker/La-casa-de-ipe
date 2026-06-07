@@ -18,6 +18,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@vercel/speed-insights/react": [
+        "./src/stubs/speed-insights.tsx"
       ]
     },
     "allowImportingTsExtensions": true,

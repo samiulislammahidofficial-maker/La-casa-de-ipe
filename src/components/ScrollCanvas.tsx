@@ -167,55 +167,40 @@ export default function ScrollCanvas({ onEnterVault }: ScrollCanvasProps) {
   const [loadProgress, setLoadProgress] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  /* ── Preload all frames ─────────────────────────────── */
-  useEffect(() => {
-    let loaded = 0;
-    const images: HTMLImageElement[] = new Array(TOTAL_FRAMES);
-
-    for (let i = 0; i < TOTAL_FRAMES; i++) {
-      const img = new Image();
-      img.src = getFrameUrl(i + 1);
-
-      img.onload = () => {
-        loaded++;
-        const progress = Math.round((loaded / TOTAL_FRAMES) * 100);
-        setLoadProgress(progress);
-        if (loaded === TOTAL_FRAMES) {
-          setIsLoaded(true);
-          // Draw first frame immediately
-          drawFrame(0);
-          applyThemeColors(0);
-        }
-      };
-
-      img.onerror = () => {
-        loaded++;
-        const progress = Math.round((loaded / TOTAL_FRAMES) * 100);
-        setLoadProgress(progress);
-        if (loaded === TOTAL_FRAMES) {
-          setIsLoaded(true);
-          drawFrame(0);
-          applyThemeColors(0);
-        }
-      };
-
-      images[i] = img;
-    }
-
-    imagesRef.current = images;
-
-    return () => {
-      // Cleanup: cancel any pending RAF
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  /* ── Draw a frame onto the canvas ───────────────────── */
+  /* ── Draw a frame onto the canvas (with fallback search) ── */
   const drawFrame = useCallback((index: number) => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
-    const img = imagesRef.current[index];
-    if (!canvas || !ctx || !img || !img.complete) return;
+    if (!canvas || !ctx) return;
+
+    let img = imagesRef.current[index];
+
+    // Fallback: If target frame isn't loaded yet, find the nearest available loaded frame
+    if (!img || !img.complete) {
+      let found = false;
+      // Search backwards first (scrolling down path)
+      for (let i = index - 1; i >= 0; i--) {
+        const tempImg = imagesRef.current[i];
+        if (tempImg && tempImg.complete) {
+          img = tempImg;
+          found = true;
+          break;
+        }
+      }
+      // Search forwards if no older frame is loaded
+      if (!found) {
+        for (let i = index + 1; i < TOTAL_FRAMES; i++) {
+          const tempImg = imagesRef.current[i];
+          if (tempImg && tempImg.complete) {
+            img = tempImg;
+            found = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!img || !img.complete) return;
 
     // Size canvas to viewport (in device pixels for sharpness)
     const dpr = window.devicePixelRatio || 1;
@@ -258,6 +243,62 @@ export default function ScrollCanvas({ onEnterVault }: ScrollCanvasProps) {
 
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
   }, []);
+
+  /* ── Preload all frames progressively ───────────────── */
+  useEffect(() => {
+    const images: HTMLImageElement[] = new Array(TOTAL_FRAMES);
+    let loadedCount = 0;
+
+    // Load first frame immediately to unblock the landing page rendering
+    const firstImg = new Image();
+    firstImg.src = getFrameUrl(1);
+    images[0] = firstImg;
+
+    const startLoadingRemaining = () => {
+      // Load remaining 299 frames in the background
+      for (let i = 1; i < TOTAL_FRAMES; i++) {
+        const img = new Image();
+        img.src = getFrameUrl(i + 1);
+
+        img.onload = () => {
+          loadedCount++;
+          const progress = Math.round((loadedCount / TOTAL_FRAMES) * 100);
+          setLoadProgress(progress);
+        };
+
+        img.onerror = () => {
+          loadedCount++;
+          const progress = Math.round((loadedCount / TOTAL_FRAMES) * 100);
+          setLoadProgress(progress);
+        };
+
+        images[i] = img;
+      }
+    };
+
+    firstImg.onload = () => {
+      loadedCount++;
+      setLoadProgress(Math.round((loadedCount / TOTAL_FRAMES) * 100));
+      setIsLoaded(true);
+      drawFrame(0);
+      applyThemeColors(0);
+      // Start background load of all remaining frames
+      startLoadingRemaining();
+    };
+
+    firstImg.onerror = () => {
+      // In case first frame fails, unblock and load the rest
+      loadedCount++;
+      setIsLoaded(true);
+      startLoadingRemaining();
+    };
+
+    imagesRef.current = images;
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [drawFrame]);
 
   /* ── Scroll handler (RAF-throttled) ─────────────────── */
   useEffect(() => {

@@ -9,6 +9,7 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+        '@vercel/speed-insights/react': path.resolve(__dirname, './src/stubs/speed-insights.tsx'),
       },
     },
     server: {
