@@ -1,12 +1,9 @@
-import { useState } from "react";
 import TopNav from "../components/TopNav";
-import AccessPassModal from "../components/AccessPassModal";
-import BlueprintReveal from "../components/BlueprintReveal";
+import ScrollCanvas from "../components/ScrollCanvas";
+import FloatingMenu from "../components/FloatingMenu";
 import EventCards from "../components/EventCards";
 import { ViewType } from "../App";
 import bgImage from "../../picture/mechasamnerpic.png.png";
-import heistBg from "../../picture/heist-bg.png";
-
 
 interface HubViewProps {
   onViewChange: (
@@ -20,64 +17,31 @@ export default function HubView({
   onViewChange,
   onRegisterSuccess,
 }: HubViewProps) {
-  const [showPass, setShowPass] = useState(false);
+  // Trigger global login dispatch event
+  const handleEnterVault = () => {
+    if (navigator.vibrate) navigator.vibrate(30);
+    window.dispatchEvent(new CustomEvent("request-login"));
+  };
 
   return (
     <div className="pt-[72px]">
       <TopNav onViewChange={onViewChange} activeView="hub" />
+      
+      {/* Draggable Floating Nav Menu */}
+      <FloatingMenu onViewChange={onViewChange} />
 
-      {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEOUkmkDwjoi1nRJ7cETY672tqMi3MXk2N0VYb1j1eqs0mRrVA85rJowX1p4tlMVbs2peKv8gi4bQOhZ7mHAJ6nLBWto8x6cI9rA3aKhhiyvGCpDHi6ZwNctAc6ckY4rjul4Ymnir6PRbrgfEO_iz_JEMxHDAqzZWq3X2Trik4QhVPy02d3ObLcGUWMyXkR6QxF-u2Jh1y8LutWLBVsjoPH0KKviRmZen4cyDImkicgiF1bLEOTlN0J5QrbncSQJivWq0bNfutW1ys"
-            alt="Vault Heist"
-            className="w-full h-full object-cover opacity-50"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent"></div>
-        </div>
+      {/* ── Scroll Animation Hero (replaces old hero section) ── */}
+      <ScrollCanvas onEnterVault={handleEnterVault} />
 
-        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto flex flex-col items-center">
-          <div className="inline-block border border-brand-gold-bright/30 px-4 py-1 rounded-full mb-6 bg-black/50 backdrop-blur-md">
-            <span className="font-mono text-sm text-brand-gold-bright tracking-widest">
-              MISSION INITIATED
-            </span>
-          </div>
-
-          <div className="w-48 h-48 md:w-64 md:h-64 mb-8 rounded-full overflow-hidden border-4 border-brand-red shadow-[0_0_50px_rgba(139,0,0,0.5)]">
-            <img
-              src={heistBg}
-              alt="La Casa De IPE Event Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          <h1 className="font-display text-7xl md:text-[140px] leading-none text-white tracking-tighter uppercase mb-12 drop-shadow-2xl">
-            La Casa <br />
-            <span className="text-brand-red">De IPE</span>
-          </h1>
-
-          <button
-            onClick={() => setShowPass(true)}
-            className="group relative overflow-hidden bg-brand-red text-white font-display text-2xl px-12 py-5 rounded-sm btn-glow uppercase tracking-wider hover:bg-red-800 transition-colors border border-red-900 border-b-red-950 shadow-2xl"
-          >
-            <BlueprintReveal />
-            <span className="relative z-10 pointer-events-none">
-              Enter the Vault
-            </span>
-          </button>
-        </div>
-      </section>
-
-      {/* Events Board */}
-      <section id="events-section" className="py-24 relative overflow-hidden bg-[#0c0c0c]">
+      {/* Events Board — structure preserved, theme-aware bg */}
+      <section id="events-section" className="py-24 relative overflow-hidden theme-section-surface">
         <EventCards
           onRegisterSuccess={onRegisterSuccess}
           onViewChange={onViewChange}
         />
       </section>
 
-      {/* Department Overview */}
+      {/* Department Overview — structure preserved */}
       <section className="relative py-32 overflow-hidden">
         {/* Background Image with Overlay */}
         <div 
@@ -111,8 +75,8 @@ export default function HubView({
         </div>
       </section>
 
-      {/* Footer */}
-      <footer id="contact-section" className="border-t border-white/10 bg-[#111] py-16 px-6">
+      {/* Footer — structure preserved, theme-aware bg */}
+      <footer id="contact-section" className="border-t border-white/10 py-16 px-6 theme-section-surface">
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-12">
           {/* Organizer Logos */}
           <div className="flex flex-row gap-6 md:gap-8 items-center justify-start w-full mb-12">
@@ -172,8 +136,6 @@ export default function HubView({
           </div>
         </div>
       </footer>
-
-      {showPass && <AccessPassModal onClose={() => setShowPass(false)} />}
     </div>
   );
 }

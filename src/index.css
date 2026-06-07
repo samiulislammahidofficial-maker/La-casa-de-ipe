@@ -1,6 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
+/* ── Dynamic Color Theme ────────────────────────────────────
+ * These CSS custom properties are updated at runtime by
+ * ScrollCanvas.tsx based on scroll progress through the
+ * 300-frame animation. They cascade to the entire page so
+ * the lower-half sections respond to color changes too.    */
+:root {
+  --theme-bg: #0a0a0a;
+  --theme-bg-surface: #0c0c0c;
+  --theme-accent: #8b0000;
+  --theme-text: #e5e5e5;
+  --theme-glow: rgba(139, 0, 0, 0.5);
+}
+
 @theme {
   --color-brand-red: #8b0000;
   --color-brand-red-light: #ffb4a8;
@@ -22,10 +35,11 @@ html {
 }
 
 body {
-  background-color: var(--color-bg-base);
-  color: #e5e5e5;
+  background-color: var(--theme-bg, var(--color-bg-base));
+  color: var(--theme-text, #e5e5e5);
   font-family: var(--font-body);
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .scan-lines {
@@ -41,7 +55,11 @@ body {
 }
 
 .glow-red {
-  box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
+  box-shadow: 0 0 15px var(--theme-glow, rgba(139, 0, 0, 0.5));
+}
+
+.glow-red-text {
+  text-shadow: 0 0 20px var(--theme-glow, rgba(139, 0, 0, 0.5));
 }
 
 .glow-gold {
@@ -85,4 +103,120 @@ body {
 .group:hover > .schematic-overlay,
 .group:hover .schematic-overlay {
   animation: schematic-flash 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+ * ScrollCanvas Component Styles
+ * ══════════════════════════════════════════════════════════ */
+
+/* -- Loading Overlay ------------------------------------ */
+.scroll-canvas-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0a;
+}
+
+.scroll-canvas-loader__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 40px;
+}
+
+.scroll-canvas-loader__icon {
+  color: #e5e5e5;
+  animation: loaderPulse 2s ease-in-out infinite;
+}
+
+@keyframes loaderPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.scroll-canvas-loader__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.scroll-canvas-loader__label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: rgba(229, 229, 229, 0.6);
+  text-transform: uppercase;
+}
+
+.scroll-canvas-loader__pct {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--theme-accent, #8b0000);
+}
+
+.scroll-canvas-loader__bar {
+  width: 200px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.scroll-canvas-loader__fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--theme-accent, #8b0000);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px var(--theme-glow, rgba(139, 0, 0, 0.5));
+}
+
+/* -- Scroll Hint Arrow ---------------------------------- */
+.scroll-canvas-scroll-hint {
+  position: absolute;
+  bottom: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(229, 229, 229, 0.5);
+  animation: hintBounce 2s ease-in-out infinite, hintFadeIn 1s ease forwards;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes hintBounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
+
+@keyframes hintFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.scroll-canvas-scroll-hint__text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+/* -- Theme-aware section backgrounds -------------------- */
+.theme-section-surface {
+  background-color: var(--theme-bg-surface, #0c0c0c);
+  transition: background-color 0.4s ease;
+}
+
+.theme-section-base {
+  background-color: var(--theme-bg, #0a0a0a);
+  transition: background-color 0.4s ease;
 }
