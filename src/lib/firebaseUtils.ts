@@ -234,7 +234,7 @@ export async function getDocs(queryRef: any) {
       id,
       data: () => users[id]
     }));
-    return { docs };
+    return { docs, empty: docs.length === 0 };
   } else if (collectionName === 'registrations') {
     let regs = getMockRegistrations();
     if (queryRef.filters) {
@@ -251,9 +251,9 @@ export async function getDocs(queryRef: any) {
       id: r.id,
       data: () => r
     }));
-    return { docs };
+    return { docs, empty: docs.length === 0 };
   }
-  return { docs: [] };
+  return { docs: [], empty: true };
 }
 
 export async function addDoc(collectionRef: any, data: any) {
