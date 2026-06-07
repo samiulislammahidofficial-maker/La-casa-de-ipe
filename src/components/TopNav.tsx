@@ -111,37 +111,49 @@ export default function TopNav({ onViewChange, activeView }: TopNavProps) {
           <div className="hidden md:flex gap-10 items-center justify-center flex-1 ml-8">
             <button
               onClick={() => handleNavClick("hub")}
-              className={`font-mono text-[13px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative group overflow-hidden ${activeView === "hub" ? "text-brand-gold-bright drop-shadow-[0_0_8px_rgba(233,195,73,0.5)]" : "text-gray-400 hover:text-white"}`}
+              className={`font-mono text-[15px] md:text-[16px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative group hover:scale-105 hover:translate-y-[-1px] ${activeView === "hub" ? "text-brand-gold-bright drop-shadow-[0_0_8px_rgba(233,195,73,0.7)]" : "text-gray-400 hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"}`}
             >
               Terminal
-              {activeView === "hub" && <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-brand-gold-bright shadow-[0_0_10px_rgba(233,195,73,1)] animate-pulse"></span>}
-              <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full"></span>
+              {activeView === "hub" ? (
+                <span className="absolute -bottom-2 left-0 w-full h-[2px] bg-brand-gold-bright shadow-[0_0_10px_rgba(233,195,73,1)] animate-pulse"></span>
+              ) : (
+                <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full shadow-[0_0_8px_rgba(255,255,255,0.8)]"></span>
+              )}
             </button>
             <button
               onClick={() => handleNavClick("quiz")}
-              className={`font-mono text-[13px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative group overflow-hidden ${activeView === "quiz" ? "text-brand-gold-bright drop-shadow-[0_0_8px_rgba(233,195,73,0.5)]" : "text-gray-400 hover:text-white"}`}
+              className={`font-mono text-[15px] md:text-[16px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative group hover:scale-105 hover:translate-y-[-1px] ${activeView === "quiz" ? "text-brand-gold-bright drop-shadow-[0_0_8px_rgba(233,195,73,0.7)]" : "text-gray-400 hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"}`}
             >
               Heist Quiz
-              {activeView === "quiz" && <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-brand-gold-bright shadow-[0_0_10px_rgba(233,195,73,1)] animate-pulse"></span>}
-              <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full"></span>
+              {activeView === "quiz" ? (
+                <span className="absolute -bottom-2 left-0 w-full h-[2px] bg-brand-gold-bright shadow-[0_0_10px_rgba(233,195,73,1)] animate-pulse"></span>
+              ) : (
+                <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full shadow-[0_0_8px_rgba(255,255,255,0.8)]"></span>
+              )}
             </button>
             {user && (
               <button
                 onClick={() => handleNavClick("userDashboard")}
-                className={`font-mono text-[13px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative group overflow-hidden ${activeView === "userDashboard" ? "text-brand-gold-bright drop-shadow-[0_0_8px_rgba(233,195,73,0.5)]" : "text-gray-400 hover:text-white"}`}
+                className={`font-mono text-[15px] md:text-[16px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative group hover:scale-105 hover:translate-y-[-1px] ${activeView === "userDashboard" ? "text-brand-gold-bright drop-shadow-[0_0_8px_rgba(233,195,73,0.7)]" : "text-gray-400 hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"}`}
               >
                 User Dashboard
-                {activeView === "userDashboard" && <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-brand-gold-bright shadow-[0_0_10px_rgba(233,195,73,1)] animate-pulse"></span>}
-                <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full"></span>
+                {activeView === "userDashboard" ? (
+                  <span className="absolute -bottom-2 left-0 w-full h-[2px] bg-brand-gold-bright shadow-[0_0_10px_rgba(233,195,73,1)] animate-pulse"></span>
+                ) : (
+                  <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full shadow-[0_0_8px_rgba(255,255,255,0.8)]"></span>
+                )}
               </button>
             )}
             <button
               onClick={() => handleNavClick("dashboard")}
-              className={`font-mono text-[13px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative group overflow-hidden ${activeView === "dashboard" ? "text-brand-red drop-shadow-[0_0_8px_rgba(139,0,0,0.8)]" : "text-gray-400 hover:text-brand-red"}`}
+              className={`font-mono text-[15px] md:text-[16px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative group hover:scale-105 hover:translate-y-[-1px] ${activeView === "dashboard" ? "text-brand-red drop-shadow-[0_0_8px_rgba(139,0,0,0.8)]" : "text-gray-400 hover:text-brand-red hover:drop-shadow-[0_0_8px_rgba(139,0,0,0.5)]"}`}
             >
               Admin Dashboard
-              {activeView === "dashboard" && <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-brand-red shadow-[0_0_10px_rgba(139,0,0,1)] animate-pulse"></span>}
-              <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-brand-red transition-all duration-300 group-hover:w-full"></span>
+              {activeView === "dashboard" ? (
+                <span className="absolute -bottom-2 left-0 w-full h-[2px] bg-brand-red shadow-[0_0_10px_rgba(139,0,0,1)] animate-pulse"></span>
+              ) : (
+                <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-brand-red transition-all duration-300 group-hover:w-full shadow-[0_0_8px_rgba(139,0,0,0.8)]"></span>
+              )}
             </button>
           </div>
 
