@@ -15,6 +15,7 @@ import SignUpForm from "./components/SignUpForm";
 import { MockStateProvider } from "./context/MockStateContext";
 import UserDashboardView from "./views/UserDashboardView";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 export type ViewType = "hub" | "dashboard" | "quiz" | "ticket" | "eventDetails" | "about" | "alumni" | "sponsors" | "lastYear" | "userDashboard";
 
@@ -61,6 +62,7 @@ export default function App() {
   return (
     <MockStateProvider>
       <SpeedInsights />
+      <Analytics />
       <div className="min-h-screen relative font-body text-gray-200">
       <div className="fixed inset-0 scan-lines z-50 mix-blend-overlay pointer-events-none"></div>
       <ParticleBackground />

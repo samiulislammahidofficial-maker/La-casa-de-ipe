@@ -21,6 +21,9 @@
       ],
       "@vercel/speed-insights/next": [
         "./src/stubs/speed-insights.tsx"
+      ],
+      "@vercel/analytics/next": [
+        "./src/stubs/analytics.tsx"
       ]
     },
     "allowImportingTsExtensions": true,

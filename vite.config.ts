@@ -10,6 +10,7 @@ export default defineConfig(() => {
       alias: {
         '@': path.resolve(__dirname, '.'),
         '@vercel/speed-insights/next': path.resolve(__dirname, './src/stubs/speed-insights.tsx'),
+        '@vercel/analytics/next': path.resolve(__dirname, './src/stubs/analytics.tsx'),
       },
     },
     server: {
