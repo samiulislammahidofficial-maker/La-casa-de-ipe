@@ -19,7 +19,7 @@
       "@/*": [
         "./*"
       ],
-      "@vercel/speed-insights/react": [
+      "@vercel/speed-insights/next": [
         "./src/stubs/speed-insights.tsx"
       ]
     },

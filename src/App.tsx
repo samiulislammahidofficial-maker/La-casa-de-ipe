@@ -14,7 +14,7 @@ import SignUpForm from "./components/SignUpForm";
 
 import { MockStateProvider } from "./context/MockStateContext";
 import UserDashboardView from "./views/UserDashboardView";
-import { SpeedInsights } from "@vercel/speed-insights/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export type ViewType = "hub" | "dashboard" | "quiz" | "ticket" | "eventDetails" | "about" | "alumni" | "sponsors" | "lastYear" | "userDashboard";
 
