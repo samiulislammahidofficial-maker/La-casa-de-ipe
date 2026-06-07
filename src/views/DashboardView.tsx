@@ -16,7 +16,7 @@ interface DashboardViewProps {
 }
 
 export default function DashboardView({ onViewChange }: DashboardViewProps) {
-  const { pendingRequests, approveRegistration, rejectRegistration } = useMockState();
+  const { pendingRequests, approveRegistration, rejectRegistration, registeredTeams } = useMockState();
   const [filterEvent, setFilterEvent] = useState<string>("ALL");
 
   const uniqueEvents = Array.from(
@@ -108,40 +108,54 @@ export default function DashboardView({ onViewChange }: DashboardViewProps) {
                 </tr>
               </thead>
               <tbody>
-                {filteredRegistrations.map((eventName, idx) => (
-                  <tr
-                    key={`${eventName}-${idx}`}
-                    className="border-b border-white/5 hover:bg-white/5 transition-colors group"
-                  >
-                    <td className="p-4 font-mono text-xs text-brand-gold-bright opacity-80">
-                      {String(idx + 1).padStart(3, "0")}
-                    </td>
-                    <td className="p-4">
-                      <span className="font-display text-lg uppercase tracking-wider text-white group-hover:text-brand-gold transition-colors">
-                        Operative Alpha
-                      </span>
-                    </td>
-                    <td className="p-4 font-mono text-sm text-brand-gold-bright tracking-wider">
-                      {eventName}
-                    </td>
-                    <td className="p-4 flex justify-end gap-3">
-                      <button 
-                        onClick={() => approveRegistration(eventName)}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white border border-green-500/30 rounded transition-all font-mono text-xs uppercase tracking-widest"
-                      >
-                        <ShieldCheck size={14} />
-                        Approve
-                      </button>
-                      <button 
-                        onClick={() => rejectRegistration(eventName)}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/30 rounded transition-all font-mono text-xs uppercase tracking-widest"
-                      >
-                        <XCircle size={14} />
-                        Reject
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {filteredRegistrations.map((eventName, idx) => {
+                  const team = registeredTeams[eventName];
+                  return (
+                    <tr
+                      key={`${eventName}-${idx}`}
+                      className="border-b border-white/5 hover:bg-white/5 transition-colors group"
+                    >
+                      <td className="p-4 font-mono text-xs text-brand-gold-bright opacity-80">
+                        {String(idx + 1).padStart(3, "0")}
+                      </td>
+                      <td className="p-4">
+                        {team ? (
+                          <div className="flex flex-col">
+                            <span className="font-display text-lg uppercase tracking-wider text-white group-hover:text-brand-gold transition-colors">
+                              Team: {team.teamName}
+                            </span>
+                            <span className="font-mono text-xs text-gray-500 mt-0.5">
+                              Leader ID: {team.leaderUid} | Teammate IDs: {team.teammateUids.join(", ")}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="font-display text-lg uppercase tracking-wider text-white group-hover:text-brand-gold transition-colors">
+                            Operative Alpha
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4 font-mono text-sm text-brand-gold-bright tracking-wider">
+                        {eventName}
+                      </td>
+                      <td className="p-4 flex justify-end gap-3">
+                        <button 
+                          onClick={() => approveRegistration(eventName)}
+                          className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white border border-green-500/30 rounded transition-all font-mono text-xs uppercase tracking-widest"
+                        >
+                          <ShieldCheck size={14} />
+                          Approve
+                        </button>
+                        <button 
+                          onClick={() => rejectRegistration(eventName)}
+                          className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/30 rounded transition-all font-mono text-xs uppercase tracking-widest"
+                        >
+                          <XCircle size={14} />
+                          Reject
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {filteredRegistrations.length === 0 && (
                   <tr>
                     <td
