@@ -351,13 +351,13 @@ export default function EventCards({
   };
 
   return (
-    <div className="w-full relative py-16 px-4 pb-20 mt-16 overflow-hidden">
+    <div className="w-full relative py-8 md:py-16 px-4 pb-20 mt-4 md:mt-16 overflow-hidden">
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60 mix-blend-luminosity"
         style={{ backgroundImage: `url(${bgImage})` }}
       ></div>
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#111] via-[rgba(17,17,17,0.8)] to-[#111] pointer-events-none"></div>
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-neutral-950/95 via-black/85 to-neutral-950/95 md:from-[#111] md:via-[rgba(17,17,17,0.8)] md:to-[#111] pointer-events-none"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 mb-8">
         <h2 className="font-display text-3xl uppercase tracking-widest text-white decoration-brand-red decoration-2 underline-offset-8 underline mb-8 drop-shadow-lg">

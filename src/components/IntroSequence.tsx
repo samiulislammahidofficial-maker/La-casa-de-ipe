@@ -31,8 +31,6 @@ export default function IntroSequence({ onComplete }: IntroSequenceProps) {
 
   return (
     <div className="fixed inset-0 z-[200] w-screen h-screen overflow-hidden bg-[#000000] text-white flex flex-col-reverse md:flex-row font-body">
-      {/* Scan Lines Overlay for authentic aesthetic */}
-      <div className="fixed inset-0 scan-lines z-[60] mix-blend-overlay pointer-events-none"></div>
 
       {/* Left Column: Text & Loader */}
       <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col justify-center items-center p-6 text-center z-10">

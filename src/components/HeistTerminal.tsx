@@ -512,8 +512,7 @@ export default function HeistTerminal({
 
   return (
     <div className="bg-black/95 border border-brand-red/30 rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col lg:flex-row gap-8 max-w-5xl w-full mx-auto relative overflow-hidden backdrop-blur-2xl">
-      {/* Visual Glitch Lines Overlay */}
-      <div className="absolute inset-0 scan-lines z-0 opacity-15 pointer-events-none"></div>
+
 
       {/* LEFT COLUMN: Console Logs & Clue Image */}
       <div className="flex-1 flex flex-col gap-6 relative z-10 w-full lg:w-1/2">

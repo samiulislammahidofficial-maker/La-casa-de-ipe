@@ -3,7 +3,6 @@ import { Lock } from "lucide-react";
 export default function ComingSoonView({ title, onViewChange }: { title: string, onViewChange: (view: any) => void }) {
   return (
     <div className="min-h-screen pt-32 pb-12 px-6 flex flex-col items-center justify-center bg-[#111] text-white font-mono relative overflow-hidden">
-      <div className="absolute inset-0 scan-lines opacity-20 pointer-events-none"></div>
       
       <Lock size={64} className="text-brand-gold-bright mb-8 animate-pulse" />
       <h1 className="font-display text-4xl md:text-5xl text-white uppercase tracking-widest mb-6 text-center">

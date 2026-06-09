@@ -64,7 +64,6 @@ export default function App() {
       <SpeedInsights />
       <Analytics />
       <div className="min-h-screen relative font-body text-gray-200">
-      <div className="fixed inset-0 scan-lines z-50 mix-blend-overlay pointer-events-none"></div>
       <ParticleBackground />
 
       <AnimatePresence mode="wait">

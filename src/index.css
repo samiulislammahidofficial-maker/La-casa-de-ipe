@@ -14,6 +14,13 @@
   --theme-glow: rgba(139, 0, 0, 0.5);
 }
 
+@media (max-width: 767px) {
+  :root {
+    --theme-bg: #020202;
+    --theme-bg-surface: #040404;
+  }
+}
+
 @theme {
   --color-brand-red: #8b0000;
   --color-brand-red-light: #ffb4a8;
@@ -219,4 +226,50 @@ body {
 .theme-section-base {
   background-color: var(--theme-bg, #0a0a0a);
   transition: background-color 0.4s ease;
+}
+
+/* ══════════════════════════════════════════════════════════
+ * VideoHero Play Button Styles
+ * ══════════════════════════════════════════════════════════ */
+
+.video-hero-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.6));
+  animation: playBtnPulse 2.5s ease-in-out infinite;
+}
+
+.video-hero-play-btn:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  filter: drop-shadow(0 4px 30px rgba(139, 0, 0, 0.6));
+}
+
+.video-hero-play-btn:active {
+  transform: translate(-50%, -50%) scale(0.95);
+}
+
+.video-hero-play-svg {
+  width: 80px;
+  height: 56px;
+}
+
+@media (min-width: 768px) {
+  .video-hero-play-svg {
+    width: 100px;
+    height: 70px;
+  }
+}
+
+@keyframes playBtnPulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
 }

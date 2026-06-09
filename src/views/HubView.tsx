@@ -1,5 +1,5 @@
 import TopNav from "../components/TopNav";
-import ScrollCanvas from "../components/ScrollCanvas";
+import VideoHero from "../components/VideoHero";
 import FloatingMenu from "../components/FloatingMenu";
 import EventCards from "../components/EventCards";
 import { ViewType } from "../App";
@@ -30,11 +30,11 @@ export default function HubView({
       {/* Draggable Floating Nav Menu */}
       <FloatingMenu onViewChange={onViewChange} />
 
-      {/* ── Scroll Animation Hero (replaces old hero section) ── */}
-      <ScrollCanvas onEnterVault={handleEnterVault} />
+      {/* ── Auto-playing Video Hero (plays once, stops at last frame) ── */}
+      <VideoHero onEnterVault={handleEnterVault} />
 
       {/* Events Board — structure preserved, theme-aware bg */}
-      <section id="events-section" className="py-24 relative overflow-hidden theme-section-surface">
+      <section id="events-section" className="py-12 md:py-24 relative overflow-hidden theme-section-surface">
         <EventCards
           onRegisterSuccess={onRegisterSuccess}
           onViewChange={onViewChange}
