@@ -1,5 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { Loader2 } from "lucide-react";
+
+// Views
 import HubView from "./views/HubView";
 import DashboardView from "./views/DashboardView";
 import IntroSequence from "./components/IntroSequence";
@@ -10,44 +13,109 @@ import EventDetailsView from "./views/EventDetailsView";
 import AboutUsView from "./views/AboutUsView";
 import AlumniView from "./views/AlumniView";
 import ComingSoonView from "./views/ComingSoonView";
-import SignUpForm from "./components/SignUpForm";
-
-import { MockStateProvider } from "./context/MockStateContext";
 import UserDashboardView from "./views/UserDashboardView";
+import LoginPage from "./views/LoginPage";
+import RegistrationForm from "./views/RegistrationForm";
+import PaymentScreen from "./views/PaymentScreen";
+import RegistrationSuccess from "./views/RegistrationSuccess";
+import AdminLogin from "./views/AdminLogin";
+import AdminDashboard from "./views/AdminDashboard";
+
+// Context
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { MockStateProvider } from "./context/MockStateContext";
+
+// Vercel analytics stubs
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
-export type ViewType = "hub" | "dashboard" | "quiz" | "ticket" | "eventDetails" | "about" | "alumni" | "sponsors" | "lastYear" | "userDashboard";
+export type ViewType =
+  | "hub"
+  | "dashboard"
+  | "quiz"
+  | "ticket"
+  | "eventDetails"
+  | "about"
+  | "alumni"
+  | "sponsors"
+  | "lastYear"
+  | "userDashboard"
+  | "login"
+  | "register"
+  | "payment"
+  | "registrationSuccess"
+  | "adminLogin"
+  | "adminDashboard";
 
-export default function App() {
+function AppContent() {
+  const {
+    firebaseUser,
+    userData,
+    isLoading,
+    needsRegistration,
+    isAdminSession,
+  } = useAuth();
+
   const [currentView, setCurrentView] = useState<ViewType>("hub");
-  const [currentTicketEventId, setCurrentTicketEventId] = useState<
-    number | null
-  >(null);
-  const [currentDetailsEventId, setCurrentDetailsEventId] = useState<
-    number | null
-  >(null);
+  const [currentTicketEventId, setCurrentTicketEventId] = useState<number | null>(null);
+  const [currentDetailsEventId, setCurrentDetailsEventId] = useState<number | null>(null);
   const [introFinished, setIntroFinished] = useState(() => {
     return sessionStorage.getItem("introFinished") === "true";
   });
-  const [showGlobalLogin, setShowGlobalLogin] = useState(false);
 
+  // Check URL hash for admin access
   useEffect(() => {
-    const handleLoginRequest = () => setShowGlobalLogin(true);
+    const checkHash = () => {
+      if (window.location.hash === "#admin") {
+        if (isAdminSession) {
+          setCurrentView("adminDashboard");
+        } else {
+          setCurrentView("adminLogin");
+        }
+      }
+    };
+    checkHash();
+    window.addEventListener("hashchange", checkHash);
+    return () => window.removeEventListener("hashchange", checkHash);
+  }, [isAdminSession]);
+
+  // Handle global login request events
+  useEffect(() => {
+    const handleLoginRequest = () => {
+      if (!firebaseUser) {
+        setCurrentView("login");
+      } else if (needsRegistration) {
+        setCurrentView("register");
+      }
+    };
     window.addEventListener("request-login", handleLoginRequest as EventListener);
     return () => window.removeEventListener("request-login", handleLoginRequest as EventListener);
-  }, []);
+  }, [firebaseUser, needsRegistration]);
+
+  // Auto-redirect on auth state changes
+  useEffect(() => {
+    if (!isLoading && firebaseUser && needsRegistration && currentView === "login") {
+      setCurrentView("register");
+    }
+  }, [firebaseUser, needsRegistration, isLoading, currentView]);
 
   const handleIntroComplete = () => {
     sessionStorage.setItem("introFinished", "true");
     setIntroFinished(true);
   };
 
-  const navigateTo = (view: ViewType, eventId?: number) => {
+  const navigateTo = (view: ViewType | string, eventId?: number) => {
     if (view === "eventDetails" && eventId) {
       setCurrentDetailsEventId(eventId);
     }
-    setCurrentView(view);
+
+    // Route protection: admin views
+    if (view === "adminDashboard" && !isAdminSession) {
+      setCurrentView("adminLogin");
+      return;
+    }
+
+    setCurrentView(view as ViewType);
   };
 
   const handleRegisterSuccess = (eventId: number) => {
@@ -55,155 +123,161 @@ export default function App() {
     setCurrentView("ticket");
   };
 
+  const handleLoginSuccess = () => {
+    // Auth context will detect the user; if they need registration, we'll redirect
+    // Otherwise, go to hub
+    if (needsRegistration) {
+      setCurrentView("register");
+    } else {
+      setCurrentView("hub");
+    }
+  };
+
+  // Show intro sequence
   if (!introFinished) {
     return <IntroSequence onComplete={handleIntroComplete} />;
   }
 
+  // Show global loading while auth initializes
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 size={32} className="animate-spin text-brand-red mx-auto mb-4" />
+          <p className="font-mono text-xs text-gray-500 uppercase tracking-widest">
+            Initializing secure connection...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Page transition wrapper
+  const PageTransition = ({ children, viewKey }: { children: React.ReactNode; viewKey: string }) => (
+    <motion.div
+      key={viewKey}
+      initial={{ opacity: 0, filter: "blur(8px)" }}
+      animate={{ opacity: 1, filter: "blur(0px)" }}
+      exit={{ opacity: 0, filter: "blur(8px)" }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
+      {children}
+    </motion.div>
+  );
+
   return (
-    <MockStateProvider>
-      <SpeedInsights />
-      <Analytics />
-      <div className="min-h-screen relative font-body text-gray-200">
+    <div className="min-h-screen relative font-body text-gray-200">
       <ParticleBackground />
 
       <AnimatePresence mode="wait">
+        {/* ─── Auth Views ───────────────────────────── */}
+        {currentView === "login" && (
+          <PageTransition viewKey="login">
+            <LoginPage onViewChange={navigateTo} onLoginSuccess={handleLoginSuccess} />
+          </PageTransition>
+        )}
+        {currentView === "register" && (
+          <PageTransition viewKey="register">
+            <RegistrationForm onViewChange={navigateTo} />
+          </PageTransition>
+        )}
+        {currentView === "payment" && (
+          <PageTransition viewKey="payment">
+            <PaymentScreen onViewChange={navigateTo} />
+          </PageTransition>
+        )}
+        {currentView === "registrationSuccess" && (
+          <PageTransition viewKey="registrationSuccess">
+            <RegistrationSuccess onViewChange={navigateTo} />
+          </PageTransition>
+        )}
+
+        {/* ─── Admin Views ──────────────────────────── */}
+        {currentView === "adminLogin" && (
+          <PageTransition viewKey="adminLogin">
+            <AdminLogin onViewChange={navigateTo} />
+          </PageTransition>
+        )}
+        {currentView === "adminDashboard" && (
+          <PageTransition viewKey="adminDashboard">
+            <AdminDashboard onViewChange={navigateTo} />
+          </PageTransition>
+        )}
+
+        {/* ─── Main App Views ──────────────────────── */}
         {currentView === "hub" && (
-          <motion.div
-            key="hub"
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(8px)" }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
+          <PageTransition viewKey="hub">
             <HubView
               onViewChange={navigateTo}
               onRegisterSuccess={handleRegisterSuccess}
             />
-          </motion.div>
+          </PageTransition>
         )}
         {currentView === "userDashboard" && (
-          <motion.div
-            key="userDashboard"
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(8px)" }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
+          <PageTransition viewKey="userDashboard">
             <UserDashboardView onViewChange={navigateTo} />
-          </motion.div>
+          </PageTransition>
         )}
         {currentView === "dashboard" && (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(8px)" }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
+          <PageTransition viewKey="dashboard">
             <DashboardView onViewChange={navigateTo} />
-          </motion.div>
+          </PageTransition>
         )}
         {currentView === "quiz" && (
-          <motion.div
-            key="quiz"
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(8px)" }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
+          <PageTransition viewKey="quiz">
             <HeistQuizDashboard onViewChange={navigateTo} />
-          </motion.div>
+          </PageTransition>
         )}
         {currentView === "ticket" && currentTicketEventId && (
-          <motion.div
-            key="ticket"
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(8px)" }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
+          <PageTransition viewKey="ticket">
             <TicketView
               eventId={currentTicketEventId}
               onViewChange={navigateTo}
             />
-          </motion.div>
+          </PageTransition>
         )}
         {currentView === "eventDetails" && currentDetailsEventId && (
-          <motion.div
-            key="eventDetails"
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(8px)" }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
-            <EventDetailsView 
-              eventId={currentDetailsEventId} 
-              onViewChange={navigateTo} 
-              onRegisterSuccess={handleRegisterSuccess} 
+          <PageTransition viewKey="eventDetails">
+            <EventDetailsView
+              eventId={currentDetailsEventId}
+              onViewChange={navigateTo}
+              onRegisterSuccess={handleRegisterSuccess}
             />
-          </motion.div>
+          </PageTransition>
         )}
         {currentView === "about" && (
-          <motion.div
-            key="about"
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(8px)" }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
+          <PageTransition viewKey="about">
             <AboutUsView onViewChange={navigateTo} />
-          </motion.div>
+          </PageTransition>
         )}
         {currentView === "alumni" && (
-          <motion.div
-            key="alumni"
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(8px)" }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
+          <PageTransition viewKey="alumni">
             <AlumniView onViewChange={navigateTo} />
-          </motion.div>
+          </PageTransition>
         )}
         {currentView === "sponsors" && (
-          <motion.div
-            key="sponsors"
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(8px)" }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
+          <PageTransition viewKey="sponsors">
             <ComingSoonView title="Sponsors" onViewChange={navigateTo} />
-          </motion.div>
+          </PageTransition>
         )}
         {currentView === "lastYear" && (
-          <motion.div
-            key="lastYear"
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(8px)" }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
+          <PageTransition viewKey="lastYear">
             <ComingSoonView title="Last Year Event" onViewChange={navigateTo} />
-          </motion.div>
+          </PageTransition>
         )}
       </AnimatePresence>
-
-      {showGlobalLogin && (
-        <div className="fixed inset-0 z-[9999] px-4 py-10 bg-black/80 backdrop-blur-sm overflow-y-auto flex justify-center items-start">
-          <div
-            className="fixed inset-0 min-h-screen"
-            onClick={() => setShowGlobalLogin(false)}
-          ></div>
-          <div className="relative z-50 w-full max-w-md my-auto">
-            <SignUpForm onComplete={() => {
-              setShowGlobalLogin(false);
-              navigateTo("userDashboard");
-            }} />
-          </div>
-        </div>
-      )}
     </div>
-    </MockStateProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <MockStateProvider>
+        <SpeedInsights />
+        <Analytics />
+        <AppContent />
+      </MockStateProvider>
+    </AuthProvider>
   );
 }

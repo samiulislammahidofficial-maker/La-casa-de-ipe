@@ -24,43 +24,25 @@ service cloud.firestore {
       return isSignedIn() && getUserData().role == 'admin';
     }
 
-    function isOrganizer() {
-      return isSignedIn() && getUserData().role == 'organizer';
-    }
-
-    function isStudent() {
-      return isSignedIn() && (getUserData().role == 'student' || !('role' in getUserData()));
-    }
-
     // Users Collection
     match /users/{userId} {
       
-      function isValidUser(data) {
-        return data.keys().hasAll(['name', 'email', 'role']) &&
-               data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
-               data.email is string && data.email.size() <= 150 &&
-               data.role in ['student', 'organizer', 'admin'];
-      }
-
-      function isValidUserUpdate(incoming, existing) {
-         // Users cannot elevate their own role unless they are admin.
-         return incoming.diff(existing).affectedKeys().hasAny(['role']) == false;
-      }
-
-      allow get: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isAdmin());
-      allow list: if isAdmin();
+      // Allow users to read their own document, admins can read all
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isSignedIn(); // Allow admin dashboard to list all users
       
-      allow create: if isSignedIn() && isValidId(userId) && request.auth.uid == userId && 
-                       isValidUser(request.resource.data) && 
-                       request.resource.data.role == 'student'; // Force student role on create via client
+      // Allow users to create their own document during registration
+      allow create: if isSignedIn() && request.auth.uid == userId &&
+                       request.resource.data.keys().hasAll(['name', 'studentId', 'email', 'department', 'role']) &&
+                       request.resource.data.name is string &&
+                       request.resource.data.role == 'user';
 
-      // Admins can update roles
-      allow update: if isSignedIn() && isValidId(userId) && 
-                       isValidUser(request.resource.data) &&
-                       (
-                         isAdmin() || 
-                         (request.auth.uid == userId && isValidUserUpdate(request.resource.data, resource.data))
-                       );
+      // Users can update their own document (except role), admins can update any
+      allow update: if isSignedIn() && (
+                       isAdmin() || 
+                       (request.auth.uid == userId && 
+                        request.resource.data.role == resource.data.role)
+                     );
       
       allow delete: if isAdmin();
     }
@@ -68,30 +50,20 @@ service cloud.firestore {
     // Registrations Collection
     match /registrations/{registrationId} {
       
-      function isValidRegistration(data) {
-        return data.keys().hasAll(['userId', 'eventName', 'createdAt']) &&
-               data.userId is string && data.userId.size() <= 128 &&
-               data.eventName is string && data.eventName.size() > 0 && data.eventName.size() <= 100;
-      }
-
-      allow get: if isSignedIn() && isValidId(registrationId) && (
+      allow get: if isSignedIn() && (
         resource.data.userId == request.auth.uid || 
-        isAdmin() ||
-        (isOrganizer() && resource.data.eventName == getUserData().assignedEvent)
+        isAdmin()
       );
       
       allow list: if isSignedIn() && (
         resource.data.userId == request.auth.uid || 
-        isAdmin() ||
-        (isOrganizer() && resource.data.eventName == getUserData().assignedEvent)
+        isAdmin()
       );
 
-      allow create: if isSignedIn() && isValidId(registrationId) && 
-                       isValidRegistration(request.resource.data) && 
+      allow create: if isSignedIn() && 
                        request.resource.data.userId == request.auth.uid &&
                        exists(/databases/$(database)/documents/users/$(request.auth.uid));
 
-      // No updating registrations typical for users, only admin
       allow update: if isAdmin();
       allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
     }

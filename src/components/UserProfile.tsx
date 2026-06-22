@@ -1,90 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { User, LogOut, X } from "lucide-react";
-import {
-  auth,
-  db,
-  onAuthStateChanged,
-  signOut,
-  doc,
-  getDoc,
-  collection,
-  query,
-  where,
-  getDocs
-} from "../lib/firebaseUtils";
-import SignUpForm from "./SignUpForm";
-
-interface UserData {
-  name: string;
-  rollNumber: string;
-}
-
-interface Registration {
-  id: string;
-  eventName: string;
-}
+import { useAuth } from "../context/AuthContext";
 
 export default function UserProfile() {
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const { firebaseUser, userData, isLoading, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      if (user) {
-        try {
-          // Fetch user profile data
-          const docRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setUserData(docSnap.data() as UserData);
-          }
-
-          // Fetch user registrations
-          const regQuery = query(
-            collection(db, "registrations"),
-            where("userId", "==", user.uid),
-          );
-          const regSnapshot = await getDocs(regQuery);
-          const userRegs = regSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          })) as Registration[];
-          setRegistrations(userRegs);
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      } else {
-        setUserData(null);
-        setRegistrations([]);
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      setIsOpen(false);
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="w-8 h-8 animate-pulse bg-white/10 rounded-full"></div>
     );
   }
 
-  if (!currentUser) {
+  if (!firebaseUser) {
     return (
       <button
         onClick={() => window.dispatchEvent(new CustomEvent('request-login'))}
@@ -94,6 +22,15 @@ export default function UserProfile() {
       </button>
     );
   }
+
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <div className="relative">
@@ -129,30 +66,38 @@ export default function UserProfile() {
                   Codename
                 </div>
                 <div className="font-mono text-lg">
-                  {userData?.name || "Unknown"}
+                  {userData?.name || firebaseUser.displayName || "Unknown"}
                 </div>
               </div>
               <div className="mb-6">
                 <div className="text-xs uppercase tracking-widest text-gray-500 mb-1">
-                  Roll Number
+                  Student ID
                 </div>
                 <div className="font-mono text-lg">
-                  {userData?.rollNumber || "N/A"}
+                  {userData?.studentId || "N/A"}
+                </div>
+              </div>
+              <div className="mb-6">
+                <div className="text-xs uppercase tracking-widest text-gray-500 mb-1">
+                  Department
+                </div>
+                <div className="font-mono text-lg">
+                  {userData?.department || "N/A"}
                 </div>
               </div>
 
               <div className="mb-6">
                 <div className="text-xs uppercase tracking-widest text-gray-500 mb-2">
-                  Registered Operations
+                  Registered Events
                 </div>
-                {registrations.length > 0 ? (
+                {userData?.registered_events && userData.registered_events.length > 0 ? (
                   <ul className="space-y-2">
-                    {registrations.map((reg) => (
+                    {userData.registered_events.map((evt: string) => (
                       <li
-                        key={reg.id}
+                        key={evt}
                         className="font-mono text-sm bg-white/5 border border-white/10 p-2 rounded"
                       >
-                        {reg.eventName}
+                        {evt}
                       </li>
                     ))}
                   </ul>

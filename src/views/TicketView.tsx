@@ -1,11 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  auth,
-  db,
-  onAuthStateChanged,
-  doc,
-  getDoc
-} from "../lib/firebaseUtils";
+import { useAuth } from "../context/AuthContext";
 import { ChevronLeft, QrCode } from "lucide-react";
 
 interface TicketViewProps {
@@ -14,13 +8,10 @@ interface TicketViewProps {
 }
 
 export default function TicketView({ eventId, onViewChange }: TicketViewProps) {
-  const [userData, setUserData] = useState<any>(null);
+  const { userData } = useAuth();
   const [eventName, setEventName] = useState<string>("");
 
   useEffect(() => {
-    // We could pass eventName, or read it from EVENTS. The user wants the event name displayed.
-    // For simplicity, let's hardcode a map here or just pass it as string. But eventId is passed.
-    // Let's define the name map:
     const EVENTS: Record<number, string> = {
       1: "Treasure Hunt",
       2: "BizComp",
@@ -54,21 +45,6 @@ export default function TicketView({ eventId, onViewChange }: TicketViewProps) {
     setEventName(EVENTS[eventId] || "Unknown Operation");
 
     if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const docRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setUserData(docSnap.data());
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      }
-    });
-    return () => unsubscribe();
   }, [eventId]);
 
   return (
@@ -130,7 +106,7 @@ export default function TicketView({ eventId, onViewChange }: TicketViewProps) {
                     Operative ID
                   </p>
                   <p className="font-mono text-sm text-white uppercase truncate">
-                    {userData?.rollNumber || "Loading..."}
+                    {userData?.studentId || "Loading..."}
                   </p>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
 
 export type User = {
   uid: string;
@@ -30,23 +31,28 @@ interface MockStateContextType {
 const MockStateContext = createContext<MockStateContextType | undefined>(undefined);
 
 export function MockStateProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const { firebaseUser, userData, logout: authLogout } = useAuth();
+
+  // Derive user from real AuthContext
+  const user: User | null = firebaseUser && userData ? {
+    uid: firebaseUser.uid,
+    name: userData.name || firebaseUser.displayName || 'Operative',
+    email: userData.email || firebaseUser.email || '',
+    rollNumber: userData.studentId || '',
+  } : null;
+
   const [pendingRequests, setPendingRequests] = useState<string[]>([]);
   const [approvedRequests, setApprovedRequests] = useState<string[]>([]);
   const [registeredTeams, setRegisteredTeams] = useState<Record<string, Team>>({});
   const [activeTerminalSession, setActiveTerminalSession] = useState<{ teamName: string; activeUserRoll: string } | null>(null);
 
   const login = () => {
-    setUser({
-      uid: 'operative-123',
-      name: 'Operative Alpha',
-      email: 'alpha@example.com',
-      rollNumber: '2024-001'
-    });
+    // Trigger the global login event — real auth handles the rest
+    window.dispatchEvent(new CustomEvent('request-login'));
   };
 
   const logout = () => {
-    setUser(null);
+    authLogout();
     setPendingRequests([]);
     setApprovedRequests([]);
     setRegisteredTeams({});
