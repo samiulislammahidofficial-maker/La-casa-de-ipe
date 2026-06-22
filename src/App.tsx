@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 
 // Views
 import HubView from "./views/HubView";
-import DashboardView from "./views/DashboardView";
 import IntroSequence from "./components/IntroSequence";
 import ParticleBackground from "./components/ParticleBackground";
 import HeistQuizDashboard from "./components/HeistQuizDashboard";
@@ -110,7 +109,7 @@ function AppContent() {
     }
 
     // Route protection: admin views
-    if (view === "adminDashboard" && !isAdminSession) {
+    if ((view === "adminDashboard" || view === "dashboard") && !isAdminSession) {
       setCurrentView("adminLogin");
       return;
     }
@@ -220,7 +219,7 @@ function AppContent() {
         )}
         {currentView === "dashboard" && (
           <PageTransition viewKey="dashboard">
-            <DashboardView onViewChange={navigateTo} />
+            <AdminDashboard onViewChange={navigateTo} />
           </PageTransition>
         )}
         {currentView === "quiz" && (
