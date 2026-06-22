@@ -273,3 +273,16 @@ body {
   0%, 100% { opacity: 0.9; }
   50% { opacity: 1; }
 }
+
+@keyframes scan {
+  0% {
+    top: 0%;
+  }
+  50% {
+    top: 100%;
+  }
+  100% {
+    top: 0%;
+  }
+}
+

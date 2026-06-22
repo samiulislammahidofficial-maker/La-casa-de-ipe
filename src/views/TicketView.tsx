@@ -124,7 +124,7 @@ export default function TicketView({ eventId, onViewChange }: TicketViewProps) {
                 <div className="w-48 h-48 bg-white p-2 rounded-sm relative flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.2)]">
                   <div className="absolute inset-0 border-2 border-black/10 m-2 border-dashed"></div>
                   <QrCode size={120} className="text-black opacity-80" />
-                  <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500/50 -translate-y-1/2 shadow-[0_0_10px_rgba(255,0,0,0.8)] animate-[scan_2s_ease-in-out_infinite]"></div>
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-red-500/50 shadow-[0_0_10px_rgba(255,0,0,0.8)] animate-[scan_2s_ease-in-out_infinite]"></div>
                 </div>
                 <p className="font-mono text-xs text-gray-400 mt-4 uppercase tracking-[0.2em] text-center">
                   Scan at Entry Point
