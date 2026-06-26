@@ -43,201 +43,263 @@ import { useMockState } from "../context/MockStateContext";
 
 export const EVENTS = [
   {
-    id: 999,
-    title: "Treasure Hunt Temporary",
-    icon: Map,
-    targetDate: null,
-    desc: "A temporary mock event to test the new mock authentication and registration approval pipeline. Target acquisition and asset extraction is pending admin clearance.",
-  },
-  {
-    id: 1,
-    title: "Treasure Hunt",
-    icon: Map,
-    targetDate: null,
-    desc: "This is an exciting adventure where participants solve clues, decode puzzles, and navigate through various checkpoints to find the final treasure. It tests teamwork, observation skills, logical thinking, and the ability to perform under pressure. This is the most high energy, high participation event of the reception where observation and extensive movement in the campus is a must, ensuring multiple touch points for sponsor branding.",
-  },
-  {
-    id: 2,
-    title: "BizComp",
-    icon: Briefcase,
-    targetDate: "2026-07-26T12:00:00Z",
-    desc: "It is a two round case competition designed to mentor freshers for future national-level contests. 20 teams will solve a case, submit a pitch deck and work under guidance from assigned mentors. 7 finalist teams will represent their idea in front of our respective judging panel consisting of renowned industrialists, competing for a lucrative prize pool. Use of Al is strictly prohibited. This is a competitive platform for aspiring entrepreneurs and strategic thinkers to showcase their business ideas, problem-solving skills, and presentation abilities. Participants analyze challenges, develop innovative solutions, and pitch their concepts to judges.",
-  },
-  {
     id: 3,
     title: "Integration Bee",
     icon: Target,
-    targetDate: "2026-07-10T20:00:00Z",
-    desc: "This is an engaging mathematics competition centered on integration and problem-solving techniques. Participants compete to solve calculus-based questions quickly and accurately, showcasing their analytical thinking, speed, and creativity in math.",
+    targetDate: "2026-07-14T20:00:00",
+    desc: "An engaging calculus competition centered on integration and problem-solving techniques. Participants solve calculus-based questions quickly and accurately, demonstrating analytical speed and mathematical creativity under pressure.",
+    activities: [
+      { label: "Registration Starts", date: "11 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "13 Jul 2026", time: "11:59 PM" },
+      { label: "Round One", date: "14 Jul 2026", time: "8:00 PM" },
+      { label: "Round de Finale", date: "15 Jul 2026", time: "1:30 PM" }
+    ]
   },
   {
     id: 4,
     title: "Tug of War",
     icon: Anchor,
-    targetDate: "2026-07-11T13:00:00Z",
-    desc: "This is a classic team sport that highlights strength, coordination, unity, and strategy. Teams face off by pulling on opposite ends of a rope, creating a fun and energetic event that emphasizes teamwork and determination.",
+    targetDate: "2026-07-15T13:00:00",
+    desc: "A classic team sport highlighting raw strength, coordinated synergy, unity, and strategy. Teams face off by pulling opposite ends of the rope, creating a high-energy spectacle of grit and determination.",
+    activities: [
+      { label: "Registration Starts", date: "11 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "14 Jul 2026", time: "11:59 PM" },
+      { label: "Round One", date: "15 Jul 2026", time: "1:00 PM" },
+      { label: "Round de Finale", date: "15 Jul 2026", time: "1:30 PM" }
+    ]
   },
   {
-    id: 5,
-    title: "Case Competition Seminar",
-    icon: Presentation,
-    targetDate: "2026-07-24T15:00:00Z",
-    desc: "A knowledge sharing session on case competition, to help participants learn problem solving frameworks, presentation skills and strategic thinking skills. The seminar teaches students to analyse real-world business problems and come up with effective solutions. This interactive segment will remove any kind of confusion and fear from the students who want to explore the world of business, leadership and entrepreneurship. Top teams in Bangladesh, who have shown extra-ordinary success in national level bizcomps will be present to mentor the students. As this requires participation of different batches and universities, it will be a great opportunity for the sponsors to promote themselves.",
+    id: 27,
+    title: "Los Artistas Al Mando",
+    icon: Palette,
+    targetDate: "2026-08-08T19:30:00",
+    desc: "A creative art combat celebrating visual imagination and technical skill. Operatives express their vision through painting, sketching, or digital illustration, competing for design supremacy.",
+    activities: [
+      { label: "Submission Starts", date: "8 Aug 2026", time: "7:30 PM" },
+      { label: "Submission Ends", date: "14 Aug 2026", time: "11:59 PM" },
+      { label: "Result", date: "15 Aug 2026", time: "10:00 PM" }
+    ]
   },
   {
     id: 6,
-    title: "Debate Tournament",
+    title: "La Guerra De Argumentos",
     icon: Mic,
-    targetDate: "2026-07-16T12:00:00Z",
-    desc: "An argument where people give reasons, support ideas and oppose the opinions of others on a variety of subjects. The competition teaches public speaking, critical thinking, confidence and persuasive communication under pressure.",
+    targetDate: "2026-07-31T12:00:00",
+    desc: "A verbal battlefield where ideas clash, reason prevails, and opposition is deconstructed. Teams articulate their views on controversial issues under pressure, testing their rhetoric and poise.",
+    activities: [
+      { label: "Registration Starts", date: "27 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "30 Jul 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "31 Jul 2026", time: "12:00 PM" }
+    ]
   },
   {
     id: 7,
-    title: "Chess Tournament",
+    title: "Chess",
     icon: Crown,
-    targetDate: "2026-07-23T12:00:00Z",
-    desc: "A mental sport of strategy that tests intelligence, patience and decision-making skills. Players try to checkmate by carefully planning their moves, anticipating their opponents' strategies and applying logic and concentration.",
+    targetDate: "2026-07-23T12:00:00",
+    desc: "A strategic silent battle of logic, patience, and foresight. Competitors plan moves, anticipate enemy counter-actions, and aim for checkmate in a high-focus environment.",
+    activities: [
+      { label: "Registration Starts", date: "18 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "22 Jul 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "23 Jul 2026", time: "12:00 PM" }
+    ]
   },
   {
     id: 8,
     title: "FIFA",
     icon: Trophy,
-    targetDate: "2026-07-23T14:30:00Z",
-    desc: "A football-themed esports tournament where players demonstrate their football prowess on a virtual stage through competitive gaming and strategic gameplay. The tournament offers a mixture of excitement, strategy and high-octane action in the digital football arena.",
+    targetDate: "2026-07-23T14:30:00",
+    desc: "A digital football esports tournament where players showcase virtual football dominance. Competitors manage teams and perform complex maneuvers in a high-octane gaming arena.",
+    activities: [
+      { label: "Registration Starts", date: "18 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "22 Jul 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "23 Jul 2026", time: "2:30 PM" }
+    ]
   },
   {
     id: 9,
-    title: "PES",
+    title: "Pes",
     icon: Gamepad2,
-    targetDate: "2026-07-19T20:00:00Z",
-    desc: "A fun football gaming contest where players compete with realistic gameplay, teamwork, and strategic control to outplay opponents. PES tests players' reflexes, coordination and ability to manage the game.",
-  },
-  {
-    id: 10,
-    title: "Soccer (Football)",
-    icon: Activity,
-    targetDate: "2026-07-25T07:00:00Z",
-    desc: "A high-energy team sport that combines speed, coordination, teamwork, and competitive spirit. On the field, teams compete to score goals and demonstrate skill, stamina and sportsmanship.",
-  },
-  {
-    id: 11,
-    title: "UNO",
-    icon: Layers,
-    targetDate: "2026-07-24T15:00:00Z",
-    desc: "A fast-paced and fun competition of card games filled with excitement, unexpected turns and strategy. Players must think fast, play their action cards wisely and be the first to get rid of all their cards.",
-  },
-  {
-    id: 12,
-    title: "Card 29",
-    icon: Hash,
-    targetDate: "2026-07-24T17:00:00Z",
-    desc: "A popular trick taking card game that requires sharp memory, teamwork and strategic planning. The teams play against each other, making calculated moves and bids to outwit their opponents and win.",
+    targetDate: "2026-07-19T20:00:00",
+    desc: "A realistic football gaming match where tactical layout, teamwork, and quick reflexes determine the champion in digital soccer simulation.",
+    activities: [
+      { label: "Registration Starts", date: "15 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "18 Jul 2026", time: "11:59 PM" },
+      { label: "Round One", date: "19 Jul 2026", time: "8:00 PM" },
+      { label: "Round Two", date: "20 Jul 2026", time: "8:30 PM" },
+      { label: "Semi Finale", date: "23 Jul 2026", time: "1:30 PM" },
+      { label: "Round de Finale", date: "23 Jul 2026", time: "2:30 PM" }
+    ]
   },
   {
     id: 13,
-    title: "Ludo",
+    title: "Las Reinas De la Casa (Ludo, Musical Chair, Pillow Passing)",
     icon: Dices,
-    targetDate: "2026-08-20T22:00:00Z",
-    desc: "A classic board game competition of luck, strategy and fun. Players race to advance their tokens over the board, using clever strategies to beat opponents and win.",
+    targetDate: "2026-07-16T10:00:00",
+    desc: "A combined multi-event match for women operatives featuring Ludo, Musical Chairs, and Pillow Passing. Tests reaction time, board strategy, and speed in a festive, high-energy environment.",
+    activities: [
+      { label: "Registration Starts", date: "10 Jul 2026", time: "10:30 PM" },
+      { label: "Registration Ends", date: "14 Jul 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "16 Jul 2026", time: "10:00 AM" }
+    ]
   },
   {
-    id: 14,
-    title: "Musical Chairs",
-    icon: Music,
-    targetDate: "2026-08-20T22:00:00Z",
-    desc: "A fun and entertaining game where players compete for chairs while music is playing, then suddenly stops. The event brings excitement, laughter and quick reactions in a fun atmosphere.",
+    id: 10,
+    title: "Football",
+    icon: Activity,
+    targetDate: "2026-07-16T07:00:00",
+    desc: "A high-stamina field team sport combining speed, synergy, physical agility, and sportsmanship. Teams battle on the turf to execute plays and score goals.",
+    activities: [
+      { label: "Registration Starts", date: "12 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "15 Jul 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "16 Jul 2026", time: "7:00 AM" }
+    ]
   },
   {
-    id: 15,
-    title: "Pillow Passing",
-    icon: Star,
-    targetDate: "2026-08-20T22:00:00Z",
-    desc: "A fun party game where players pass a pillow around while music is playing and the suspense and fun increases when the music stops. The game encourages interaction, fun and energetic participation.",
+    id: 11,
+    title: "Uno",
+    icon: Layers,
+    targetDate: "2026-07-22T15:00:00",
+    desc: "A fast-paced, high-voltage card game of strategy, quick hand plays, and sudden twists. Match colors, play action cards, and empty your deck before the rest.",
+    activities: [
+      { label: "Registration Starts", date: "15 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "18 Jul 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "22 Jul 2026", time: "3:00 PM" }
+    ]
   },
   {
-    id: 17,
-    title: "Mortal Kombat",
-    icon: Crosshair,
-    targetDate: "2026-08-06T14:30:00Z",
-    desc: "A high-energy gaming tournament in which players compete against each other with strong characters, special moves and fast reflexes. The contest is a fierce virtual arena testing timing, strategy and combat skills.",
+    id: 12,
+    title: "El Codigo 29",
+    icon: Hash,
+    targetDate: "2026-07-22T17:00:00",
+    desc: "A classic card trick and team bidding competition requiring exceptional memory, coordination, and calculated risk-taking with team partners.",
+    activities: [
+      { label: "Registration Starts", date: "15 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "18 Jul 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "22 Jul 2026", time: "5:00 PM" }
+    ]
   },
   {
-    id: 18,
-    title: "Elonti Belonti",
-    icon: Star,
-    targetDate: null,
-    desc: "A fun old-fashioned game that encourages players to laugh, get excited, and have some good-natured competition. This event promotes presence of mind, quick responses and active participation in an energetic atmosphere.",
+    id: 5,
+    title: "The Bizz Seminar",
+    icon: Presentation,
+    targetDate: "2026-07-24T15:00:00",
+    desc: "An educational knowledge-sharing event focused on case-solving frameworks, business presentation tools, and structural thinking. Guided by national-level champions.",
+    activities: [
+      { label: "Registration Starts", date: "12 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "20 Jul 2026", time: "11:59 PM" },
+      { label: "Event Starts", date: "24 Jul 2026", time: "3:00 PM" }
+    ]
+  },
+  {
+    id: 2,
+    title: "La Casa del Emprendedor (BIZZ)",
+    icon: Briefcase,
+    targetDate: "2026-07-26T12:00:00",
+    desc: "A flagship case-solving tournament designed to mentor students. Teams analyze complex problems under pressure, draft pitch decks, and present to a distinguished judging panel.",
+    activities: [
+      { label: "Registration Starts", date: "16 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "21 Jul 2026", time: "11:59 PM" },
+      { label: "Round One", date: "26 Jul 2026", time: "12:00 PM" },
+      { label: "Submission", date: "30 Jul 2026", time: "11:59 PM" },
+      { label: "Finalists Announcement", date: "7 Aug 2026", time: "12:00 PM" },
+      { label: "Round de Finale", date: "16 Aug 2026", time: "5:30 PM" }
+    ]
   },
   {
     id: 19,
     title: "Table Tennis",
     icon: Swords,
-    targetDate: "2026-08-07T22:00:00Z",
-    desc: "A fast indoor game that tests your reflexes, your precision and your concentration. Players participate in exciting matches that demand speed, strategy and quick hand-eye coordination to outsmart their opponents.",
+    targetDate: "2026-07-15T10:00:00",
+    desc: "A rapid indoor table tennis tournament testing coordination, hand-eye speeds, and spin placement in high-velocity table tennis matches.",
+    activities: [
+      { label: "Registration Starts", date: "12 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "14 Jul 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "15 Jul 2026", time: "10:00 AM" }
+    ]
   },
   {
-    id: 20,
-    title: "Ospi",
-    icon: Eye,
-    targetDate: "2026-08-06T17:00:00Z",
-    desc: "A dynamic, team-oriented and entertaining interactive game. Participants compete in exciting rounds, challenging their communication, coordination and quick thinking skills under pressure.",
+    id: 999,
+    title: "La Caza de Tesoro",
+    icon: Map,
+    targetDate: "2026-07-30T17:00:00",
+    desc: "An exciting team-based treasure hunt where operatives solve riddles, decode maps, and navigate checks across campus to secure the vault assets.",
+    activities: [
+      { label: "Registration Starts", date: "26 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "29 Jul 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "30 Jul 2026", time: "5:00 PM" }
+    ]
   },
   {
     id: 21,
-    title: "Guess the Song or Movie",
+    title: "Guess The Movies or song",
     icon: Film,
-    targetDate: "2026-08-06T13:00:00Z",
-    desc: "A fun contest where contestants guess movies or songs from short clips, dialogues, tunes or hints. The event is a fun and engaging way to test memory, pop culture knowledge and quick thinking.",
+    targetDate: "2026-08-06T13:00:00",
+    desc: "A fun pop-culture trivia contest. Contestants identify movies or song tracks from short clips, tunes, audio cues, or graphic prompts under pressure.",
+    activities: [
+      { label: "Registration Starts", date: "02 Aug 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "05 Aug 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "06 Aug 2026", time: "1:00 PM" }
+    ]
   },
   {
-    id: 22,
-    title: "Quiz: Football",
-    icon: Trophy,
-    targetDate: "2026-08-05T13:00:00Z",
-    desc: "A knowledge based competition designed to test the understanding of football enthusiasts in players, clubs, tournaments, records and iconic football moments. Players battle it out in fun-filled rounds of trivia and challenges.",
-  },
-  {
-    id: 23,
-    title: "Quiz on Sirat",
-    icon: Radio,
-    targetDate: "2026-08-04T13:00:00Z",
-    desc: "An informative and inspiring quiz competition on the life, teachings and history of Prophet Muhammad (PBUH) The event is geared towards learning, reflection and the enrichment of Islamic knowledge in an engaging format.",
-  },
-  {
-    id: 24,
-    title: "Type Racing",
-    icon: Keyboard,
-    targetDate: "2026-08-11T22:00:00Z",
-    desc: "A contest where people compete to type as accurately and quickly as they can within a set amount of time. The event tests typing speed, concentration and efficiency in a competitive and exciting environment and inspires the students to enrich required skills.",
+    id: 20,
+    title: "Theme Game",
+    icon: Gamepad,
+    targetDate: "2026-07-23T13:00:00",
+    desc: "A themed interactive game of coordination, communication, and speed. Operative squads tackle tasks under heavy situational restrictions.",
+    activities: [
+      { label: "Registration Starts", date: "18 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "22 Jul 2026", time: "11:59 PM" },
+      { label: "Event Starts", date: "23 Jul 2026", time: "1:00 PM" }
+    ]
   },
   {
     id: 25,
-    title: "Photography Competition",
+    title: "Frames De Bella Ciao",
     icon: Camera,
-    targetDate: null,
-    desc: "A creative event where participants make photographs of meaningful, artistic and visually striking moments. The competition celebrates creativity, storytelling, technical skills and unique perspectives.",
+    targetDate: "2026-08-08T19:30:00",
+    desc: "A photography competition celebrating storytelling, visual framing, and heist-themed aesthetics. Capture and submit striking static imagery.",
+    activities: [
+      { label: "Submission Starts", date: "8 Aug 2026", time: "7:30 PM" },
+      { label: "Submission Ends", date: "14 Aug 2026", time: "11:59 PM" }
+    ]
   },
   {
     id: 26,
-    title: "Memes Competition",
+    title: "Meme Comp",
     icon: Laugh,
-    targetDate: null,
-    desc: "A funny and creative contest where users create memes on different themes, trends or situations. The contest celebrates the ability to be original, clever and entertaining with digital creativity.",
+    targetDate: "2026-08-08T19:30:00",
+    desc: "A digital humor contest where operatives create original memes on heist culture, engineering life, or student trends, competing for peak entertainment value.",
+    activities: [
+      { label: "Submission Starts", date: "8 Aug 2026", time: "7:30 PM" },
+      { label: "Submission Ends", date: "14 Aug 2026", time: "11:59 PM" }
+    ]
   },
   {
-    id: 27,
-    title: "Art Contest",
-    icon: Palette,
-    targetDate: null,
-    desc: "A stage for artists to show their imagination, creativity and artistic talent through drawings, paintings or other visual artworks. Lively creative atmosphere where participants express their ideas and feelings. It is a fine stage for the hidden artists within the future engineers to showcase their creativity.",
+    id: 24,
+    title: "La Casa del Teclado",
+    icon: Keyboard,
+    targetDate: "2026-07-23T22:00:00",
+    desc: "A high-speed type-racing championship. Competitors race to complete texts with 100% spelling precision, testing speed and keyboard ergonomics.",
+    activities: [
+      { label: "Registration Starts", date: "20 Jul 2026", time: "7:30 PM" },
+      { label: "Registration Ends", date: "22 Jul 2026", time: "11:59 PM" },
+      { label: "Competition Starts", date: "23 Jul 2026", time: "10:00 PM" }
+    ]
   },
   {
     id: 28,
-    title: "Cultural Event (The Grand Finale)",
+    title: "La Noche Del Atraco",
     icon: Activity,
-    targetDate: "2026-08-26T16:00:00Z",
-    desc: "A vibrant festival of talent, tradition and creativity with performances including music, dance, drama and creative art performances from the students. It also hosts the award ceremony for all competitions, ensuring that winners, faculty and participants are gathered in one place. The event is an opportunity for participants to express culture, entertainment and unity on stage. As the most photographed and shared part of the reception, Culural Night offers peak exposure for sponsors on stage, screens, and social media recaps.",
-  },
+    targetDate: "2026-08-19T16:00:00",
+    desc: "The spectacular heist cultural night and grand finale of the event. Features musical performances, drama, award ceremonies, and the heist victory celebration.",
+    activities: [
+      { label: "Programme Starts", date: "19 Aug 2026", time: "4:00 PM" },
+      { label: "Break Time", date: "19 Aug 2026", time: "6:30 PM-7:00 PM" },
+      { label: "Programme Ends", date: "19 Aug 2026", time: "10:00 PM" }
+    ]
+  }
 ];
 
 export default function EventCards({

@@ -206,9 +206,38 @@ export default function EventDetailsView({ eventId, onViewChange, onRegisterSucc
                 </div>
               )}
 
-              <div className="font-mono text-base md:text-lg leading-relaxed text-gray-300 border-l-2 border-brand-gold-bright pl-6 py-2 mb-12 max-w-2xl">
+              <div className="font-mono text-base md:text-lg leading-relaxed text-gray-300 border-l-2 border-brand-gold-bright pl-6 py-2 mb-8 max-w-2xl">
                 {evt.desc}
               </div>
+
+              {/* Event Timeline Table */}
+              {(evt as any).activities && (evt as any).activities.length > 0 && (
+                <div className="mb-10 max-w-2xl border border-white/5 bg-black/30 p-5 md:p-6 rounded-lg backdrop-blur-sm">
+                  <h3 className="font-display text-sm text-brand-gold-bright uppercase tracking-widest mb-4 flex items-center gap-2">
+                    📅 Operation Timeline / Schedule
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left font-mono text-xs">
+                      <thead>
+                        <tr className="border-b border-white/10 text-gray-500">
+                          <th className="py-2 pr-4 uppercase tracking-wider">Activity</th>
+                          <th className="py-2 px-4 uppercase tracking-wider">Date</th>
+                          <th className="py-2 pl-4 uppercase tracking-wider">Time</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-gray-300">
+                        {(evt as any).activities.map((act: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-white/5 transition-colors">
+                            <td className="py-3 pr-4 font-semibold text-white">{act.label}</td>
+                            <td className="py-3 px-4 text-brand-red-light">{act.date}</td>
+                            <td className="py-3 pl-4 text-gray-400">{act.time}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-col sm:flex-row items-center gap-4 border-t border-white/10 pt-8">
                 <button

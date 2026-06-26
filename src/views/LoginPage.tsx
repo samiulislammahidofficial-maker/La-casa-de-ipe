@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { LogIn, User, KeyRound, AlertTriangle, Loader2 } from "lucide-react";
 import { signInWithStudentId, signInWithGoogle } from "../lib/firebaseUtils";
+import { useAuth } from "../context/AuthContext";
 
 interface LoginPageProps {
   onViewChange: (view: string) => void;
@@ -8,6 +9,7 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ onViewChange, onLoginSuccess }: LoginPageProps) {
+  const { loginAsDemoUser } = useAuth();
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +54,12 @@ export default function LoginPage({ onViewChange, onLoginSuccess }: LoginPagePro
       console.error("Google login error:", err);
       if (err.code === "auth/popup-closed-by-user") {
         // User closed the popup — not an error to display
+      } else if (err.code === "auth/unauthorized-domain") {
+        setError(
+          "Google Sign-In is not allowed from this domain. To use Google Sign-In, " +
+          "please add the current domain to your Firebase Console -> Authentication -> Settings -> Authorized Domains. " +
+          "Otherwise, please use the Student ID login option below, or bypass it using Demo Mode."
+        );
       } else {
         setError(err.message || "Google sign-in failed. Please try again.");
       }
@@ -176,9 +184,22 @@ export default function LoginPage({ onViewChange, onLoginSuccess }: LoginPagePro
 
             {/* Error message */}
             {error && (
-              <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                <AlertTriangle size={16} className="text-red-400 shrink-0 mt-0.5" />
-                <p className="font-mono text-xs text-red-300 leading-relaxed">{error}</p>
+              <div className="flex flex-col gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle size={16} className="text-red-400 shrink-0 mt-0.5" />
+                  <p className="font-mono text-xs text-red-300 leading-relaxed">{error}</p>
+                </div>
+                {error.includes("domain") && (
+                  <div className="pt-2 border-t border-red-500/20">
+                    <button
+                      type="button"
+                      onClick={loginAsDemoUser}
+                      className="w-full py-2 bg-brand-gold-bright hover:bg-yellow-500 text-black font-mono text-xs uppercase tracking-wider rounded-lg transition-colors font-bold flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(233,195,73,0.2)]"
+                    >
+                      ⚡ Bypass & Enter Demo Mode
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -196,17 +217,26 @@ export default function LoginPage({ onViewChange, onLoginSuccess }: LoginPagePro
             </button>
           </form>
 
-          {/* Sign up link */}
-          <div className="mt-6 text-center">
+          {/* Sign up link & Demo Bypass */}
+          <div className="mt-6 text-center flex flex-col gap-2">
             <p className="font-mono text-xs text-gray-500">
               First time operative?{" "}
               <button
+                type="button"
                 onClick={() => onViewChange("register")}
                 className="text-brand-gold-bright hover:text-yellow-400 underline underline-offset-4 transition-colors"
               >
                 Sign Up Here
               </button>
             </p>
+            <div className="w-1/4 h-px bg-white/5 mx-auto my-1"></div>
+            <button
+              type="button"
+              onClick={loginAsDemoUser}
+              className="font-mono text-[10px] text-brand-gold/60 hover:text-brand-gold-bright transition-colors uppercase tracking-widest cursor-pointer"
+            >
+              ⚡ Enter Demo Mode (Bypass Firebase)
+            </button>
           </div>
         </div>
 

@@ -158,13 +158,13 @@ export default function TopNav({ onViewChange, activeView }: TopNavProps) {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 sm:gap-6">
             <button className="text-gray-400 hover:text-brand-gold-bright transition-colors duration-300 relative hidden md:block">
               <Bell size={20} />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-brand-red rounded-full shadow-[0_0_5px_rgba(139,0,0,0.8)] animate-pulse"></span>
             </button>
             
-            <div className="hidden md:block">
+            <div className="block">
               <UserProfile />
             </div>
             

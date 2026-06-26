@@ -1,22 +1,16 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 
 /* ──────────────────────────────────────────────────────────
- * VideoHero – Click-to-play frame animation (Desktop) / Static (Mobile)
+ * VideoHero – YouTube cinematic player (Desktop) / Static (Mobile)
  *
  * Key behavior:
- *  1. Desktop: Page loads instantly with frame-001 as static poster.
+ *  1. Desktop: Page loads instantly with first-frame.jpg as static poster.
  *     - "Enter to Initiate" button overlaid on the poster.
- *     - Clicking play begins loading + playing frames once, freezes on final frame.
+ *     - Clicking play begins playing the YouTube video once, freezes on final frame.
  *  2. Mobile: Video player is completely disabled/hidden.
  *     - Displays the static LAST frame as a placeholder.
  *     - "Enter the Vault" button is shown immediately.
  * ────────────────────────────────────────────────────────── */
-
-const TOTAL_FRAMES = 300;
-const FRAME_PATH = '/frames/frame-';
-
-const pad = (n: number): string => String(n).padStart(3, '0');
-const getFrameUrl = (i: number): string => `${FRAME_PATH}${pad(i)}.jpg`;
 
 const isMobileDevice = (): boolean =>
   typeof window !== 'undefined' && (window.innerWidth < 768 || 'ontouchstart' in window);
@@ -74,7 +68,7 @@ function MobileHero({ onEnterVault }: VideoHeroProps) {
       >
         {/* Last frame as static background, slightly zoomed by 3% */}
         <img
-          src={getFrameUrl(TOTAL_FRAMES)}
+          src="/last-frame.jpg"
           alt="La Casa De IPE – Heist cinematic"
           style={{
             width: '100%',
@@ -122,182 +116,174 @@ function MobileHero({ onEnterVault }: VideoHeroProps) {
 }
 
 function DesktopVideoHero({ onEnterVault }: VideoHeroProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imagesRef = useRef<HTMLImageElement[]>([]);
-  const animFrameRef = useRef<number>(0);
+  // Check if they already initiated / watched the cinematic to support one-time loading
+  const [phase, setPhase] = useState<'idle' | 'playing' | 'done'>(() => {
+    return localStorage.getItem("cinematicPlayed") === "true" ? 'done' : 'idle';
+  });
+  const playerRef = useRef<any>(null);
 
-  // States: idle → loading → playing → done
-  const [phase, setPhase] = useState<'idle' | 'loading' | 'playing' | 'done'>('idle');
-  const [loadProgress, setLoadProgress] = useState(0);
-
-  const targetFps = 30;
-
-  /* ── Draw a frame onto the canvas ── */
-  const drawFrame = useCallback((index: number) => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-
-    const img = imagesRef.current[index];
-    if (!img || !img.complete) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-
-    if (canvas.width !== vw * dpr || canvas.height !== vh * dpr) {
-      canvas.width = vw * dpr;
-      canvas.height = vh * dpr;
-      canvas.style.width = `${vw}px`;
-      canvas.style.height = `${vh}px`;
-    }
-
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.scale(dpr, dpr);
-
-    const imgAspect = img.naturalWidth / img.naturalHeight;
-    const canvasAspect = vw / vh;
-    let drawW: number, drawH: number, drawX: number, drawY: number;
-
-    if (canvasAspect > imgAspect) {
-      drawW = vw;
-      drawH = vw / imgAspect;
-      drawX = 0;
-      drawY = (vh - drawH) / 2;
-    } else {
-      drawH = vh;
-      drawW = vh * imgAspect;
-      drawX = (vw - drawW) / 2;
-      drawY = 0;
-    }
-
-    ctx.drawImage(img, drawX, drawY, drawW, drawH);
-  }, []);
-
-  /* ── Load all frames and start playing ── */
-  const startPlayback = useCallback(() => {
-    if (phase !== 'idle') return;
-    setPhase('loading');
-
-    const images: HTMLImageElement[] = [];
-    let loadedCount = 0;
-
-    const total = TOTAL_FRAMES;
-    const BATCH_SIZE = 30;
-
-    // Load frames in batches
-    const loadBatch = (batchStart: number) => {
-      const end = Math.min(batchStart + BATCH_SIZE, total);
-
-      for (let idx = batchStart; idx < end; idx++) {
-        const frameIndex = idx + 1;
-        const img = new Image();
-        img.src = getFrameUrl(frameIndex);
-
-        img.onload = () => {
-          loadedCount++;
-          setLoadProgress(Math.round((loadedCount / total) * 100));
-          if (loadedCount >= total) {
-            beginAnimation(images);
-          }
-        };
-
-        img.onerror = () => {
-          loadedCount++;
-          setLoadProgress(Math.round((loadedCount / total) * 100));
-          if (loadedCount >= total) {
-            beginAnimation(images);
-          }
-        };
-
-        images[idx] = img;
+  // Trigger video playback
+  const startPlayback = () => {
+    setPhase('playing');
+    if (playerRef.current) {
+      try {
+        playerRef.current.unMute();
+        playerRef.current.playVideo();
+      } catch (e) {
+        console.error("Failed to play/unmute YouTube video: ", e);
       }
+    }
+  };
 
-      if (end < total) {
-        setTimeout(() => loadBatch(end), 10);
+  // Skip video cinematic
+  const handleSkip = () => {
+    localStorage.setItem("cinematicPlayed", "true");
+    setPhase('done');
+    if (playerRef.current) {
+      try {
+        playerRef.current.pauseVideo();
+      } catch (e) {
+        console.error("Failed to pause YouTube video: ", e);
       }
-    };
+    }
+  };
 
-    loadBatch(0);
-    imagesRef.current = images;
+  // Monitor video playback time to transition slightly early and avoid the YouTube ending glitch
+  useEffect(() => {
+    if (phase !== 'playing') return;
+
+    const interval = setInterval(() => {
+      if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+        try {
+          const currentTime = playerRef.current.getCurrentTime();
+          const duration = playerRef.current.getDuration();
+          if (duration > 0 && duration - currentTime < 0.8) {
+            // Smoothly snap to done phase just before the video technically ends to hide YT controls/black screen/related videos
+            localStorage.setItem("cinematicPlayed", "true");
+            setPhase('done');
+            try {
+              playerRef.current.pauseVideo();
+            } catch (err) {}
+            clearInterval(interval);
+          }
+        } catch (e) {
+          // ignore if methods are not loaded yet
+        }
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
   }, [phase]);
 
-  /* ── Play the animation loop (runs once) ── */
-  const beginAnimation = useCallback((images: HTMLImageElement[]) => {
-    imagesRef.current = images;
-    setPhase('playing');
+  // Initialize YouTube API player on mount to start loading/buffering early
+  useEffect(() => {
+    let player: any;
 
-    let currentFrame = 0;
-    const totalPlayable = images.length;
-    const frameDuration = 1000 / targetFps;
-    let lastTime = performance.now();
-
-    const playLoop = (now: number) => {
-      const delta = now - lastTime;
-
-      if (delta >= frameDuration) {
-        lastTime = now - (delta % frameDuration);
-        currentFrame++;
-
-        if (currentFrame >= totalPlayable) {
-          drawFrame(totalPlayable - 1);
-          setPhase('done');
-          return;
-        }
-
-        drawFrame(currentFrame);
-      }
-
-      animFrameRef.current = requestAnimationFrame(playLoop);
+    const onPlayerReady = (event: any) => {
+      playerRef.current = event.target;
     };
 
-    drawFrame(0);
-    animFrameRef.current = requestAnimationFrame(playLoop);
-  }, [drawFrame, targetFps]);
+    const onPlayerStateChange = (event: any) => {
+      // YT.PlayerState.ENDED is 0
+      if (event.data === 0) {
+        localStorage.setItem("cinematicPlayed", "true");
+        setPhase('done');
+        try {
+          event.target?.pauseVideo();
+        } catch (err) {}
+      }
+    };
 
-  /* ── Cleanup ── */
-  useEffect(() => {
+    const initPlayer = () => {
+      player = new (window as any).YT.Player('youtube-player', {
+        height: '100%',
+        width: '100%',
+        videoId: 'EFabN2fRtyo',
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          rel: 0,
+          showinfo: 0,
+          modestbranding: 1,
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+        },
+      });
+    };
+
+    if (!(window as any).YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+
+      (window as any).onYouTubeIframeAPIReady = () => {
+        initPlayer();
+      };
+    } else {
+      initPlayer();
+    }
+
     return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (player && player.destroy) {
+        player.destroy();
+      }
     };
   }, []);
 
-  /* ── Resize: redraw last frame if animation is done ── */
-  useEffect(() => {
-    const handleResize = () => {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        canvas.width = 0;
-        canvas.height = 0;
-      }
-      if (phase === 'done' && imagesRef.current.length > 0) {
-        drawFrame(imagesRef.current.length - 1);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [drawFrame, phase]);
-
-  const showPoster = phase === 'idle';
-  const showLoader = phase === 'loading';
-  const showCanvas = phase === 'playing' || phase === 'done';
-  const showCta = phase === 'done';
+  const iframeStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: '100vw',
+    height: '56.25vw', // 16:9 aspect ratio cover
+    minHeight: '100vh',
+    minWidth: '177.78vh',
+    transform: 'translate(-50%, -50%)',
+    border: 'none',
+    pointerEvents: 'none',
+  };
 
   return (
     <div
       className="video-hero-container"
-      style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden', background: '#0a0a0a' }}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100vh',
+        overflow: 'hidden',
+        background: '#0a0a0a',
+      }}
     >
-      {/* ── POSTER: Static first frame + Play button (idle state) ── */}
-      {showPoster && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 2 }}>
-          {/* First frame as static background */}
+      {/* Preload last frame to prevent flash when video finishes */}
+      <img src="/last-frame.jpg" alt="" style={{ display: 'none' }} />
+
+      {/* ── IDLE STATE: First Frame Poster + Initiate Button at Bottom ── */}
+      {phase === 'idle' && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-end', // Position button at the bottom side
+            paddingBottom: '8%',        // Distance from bottom of hero section
+            background: '#0a0a0a',
+          }}
+        >
           <img
-            src={getFrameUrl(1)}
+            src="/first-frame.jpg"
             alt="La Casa De IPE – Heist cinematic"
             style={{
+              position: 'absolute',
+              inset: 0,
               width: '100%',
               height: '100%',
               objectFit: 'cover',
@@ -305,110 +291,119 @@ function DesktopVideoHero({ onEnterVault }: VideoHeroProps) {
             }}
           />
 
-          {/* Dark scrim for contrast against the play button */}
+          {/* Vignette Overlay */}
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'radial-gradient(circle at center, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.55) 100%)',
+              background: 'radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)',
               pointerEvents: 'none',
             }}
           />
 
-          {/* "Enter to Initiate" Button */}
+          {/* Play Button */}
           <button
             onClick={startPlayback}
-            aria-label="Enter to initiate"
-            className="video-hero-play-btn group relative overflow-hidden bg-brand-red text-white font-display text-lg md:text-2xl px-8 md:px-12 py-4 md:py-5 rounded-sm uppercase tracking-wider hover:bg-red-800 transition-colors border border-red-900 border-b-red-950 shadow-2xl"
+            aria-label="Start to initiate"
+            className="video-hero-play-btn group relative overflow-hidden bg-brand-red text-white font-display text-lg md:text-2xl px-8 md:px-12 py-4 md:py-5 rounded-sm uppercase tracking-wider hover:bg-red-800 transition-colors border border-red-900 border-b-red-950 shadow-2xl z-20 cursor-pointer"
           >
             <span className="relative z-10 pointer-events-none">
-              Enter to Initiate
+              Start to Initiate
             </span>
           </button>
         </div>
       )}
 
-      {/* ── LOADING: Progress overlay while frames download ── */}
-      {showLoader && (
-        <div className="scroll-canvas-loader" style={{ zIndex: 3 }}>
-          <div className="scroll-canvas-loader__inner">
-            <div className="scroll-canvas-loader__icon">
-              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="2" opacity="0.3" />
-                <circle cx="32" cy="32" r="20" stroke="currentColor" strokeWidth="1.5" opacity="0.2" />
-                <path d="M32 4 L32 12 M32 52 L32 60 M4 32 L12 32 M52 32 L60 32" stroke="currentColor" strokeWidth="2" opacity="0.4" />
-                <circle
-                  cx="32" cy="32" r="28"
-                  stroke="var(--theme-accent, #8b0000)"
-                  strokeWidth="2.5"
-                  strokeDasharray={`${loadProgress * 1.76} 176`}
-                  strokeLinecap="round"
-                  transform="rotate(-90 32 32)"
-                  style={{ transition: 'stroke-dasharray 0.3s ease' }}
-                />
-              </svg>
-            </div>
-            <div className="scroll-canvas-loader__text">
-              <span className="scroll-canvas-loader__label">LOADING HEIST</span>
-              <span className="scroll-canvas-loader__pct">{loadProgress}%</span>
-            </div>
-            <div className="scroll-canvas-loader__bar">
-              <div
-                className="scroll-canvas-loader__fill"
-                style={{ width: `${loadProgress}%` }}
-              />
-            </div>
-          </div>
+      {/* ── PLAYING STATE: YouTube Iframe (Preloaded, hidden when idle/done) ── */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: phase === 'playing' ? 5 : -10,
+          opacity: phase === 'playing' ? 1 : 0,
+          pointerEvents: phase === 'playing' ? 'auto' : 'none',
+          background: '#000',
+          transition: 'none',
+        }}
+      >
+        <div style={iframeStyle}>
+          <div id="youtube-player" style={{ width: '100%', height: '100%' }} />
+        </div>
+
+        {/* Skip Button */}
+        {phase === 'playing' && (
+          <button
+            onClick={handleSkip}
+            className="absolute bottom-10 right-10 z-20 bg-black/60 hover:bg-black/80 border border-white/20 hover:border-white/40 text-white font-mono text-xs uppercase tracking-widest px-4 py-2.5 rounded transition-all active:scale-95 cursor-pointer"
+          >
+            Skip Cinematic →
+          </button>
+        )}
+      </div>
+
+      {/* ── DONE STATE: Last Frame Poster + Enter Vault Button at Bottom ── */}
+      {phase === 'done' && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-end', // Position button at the bottom side
+            paddingBottom: '8%',        // Distance from bottom of hero section
+            background: '#0a0a0a',
+          }}
+        >
+          <img
+            src="/last-frame.jpg"
+            alt="La Casa De IPE – Cinematic complete"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+
+          {/* Vignette Overlay */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)',
+              pointerEvents: 'none',
+            }}
+          />
+
+          {/* Enter Vault Button */}
+          <button
+            onClick={onEnterVault}
+            className="group relative overflow-hidden bg-brand-red text-white font-display text-lg md:text-2xl px-8 md:px-12 py-4 md:py-5 rounded-sm btn-glow uppercase tracking-wider hover:bg-red-800 transition-colors border border-red-900 border-b-red-950 shadow-2xl z-20 cursor-pointer"
+          >
+            <span className="relative z-10 pointer-events-none">
+              Enter the Vault
+            </span>
+          </button>
         </div>
       )}
 
-      {/* ── CANVAS: Video playback + frozen final frame ── */}
-      <canvas
-        ref={canvasRef}
-        style={{
-          display: showCanvas ? 'block' : 'none',
-          width: '100%',
-          height: '100%',
-        }}
-      />
-
-      {/* Gradient overlay at bottom */}
+      {/* Bottom fade shadow for smooth page transitions */}
       <div
         style={{
           position: 'absolute',
           bottom: 0,
           left: 0,
           right: 0,
-          height: '30%',
+          height: '25%',
           background: 'linear-gradient(to top, var(--theme-bg, #0a0a0a), transparent)',
           pointerEvents: 'none',
-          zIndex: 4,
+          zIndex: 12,
         }}
       />
-
-      {/* ── CTA: "Enter the Vault" — fades in after animation ends ── */}
-      <div
-        className="video-hero-cta"
-        style={{
-          position: 'absolute',
-          bottom: '8%',
-          left: '50%',
-          transform: `translateX(-50%) translateY(${showCta ? '0px' : '20px'})`,
-          opacity: showCta ? 1 : 0,
-          pointerEvents: showCta ? 'auto' : 'none',
-          zIndex: 10,
-          transition: 'opacity 0.8s ease, transform 0.8s ease',
-        }}
-      >
-        <button
-          onClick={onEnterVault}
-          className="group relative overflow-hidden bg-brand-red text-white font-display text-lg md:text-2xl px-8 md:px-12 py-4 md:py-5 rounded-sm btn-glow uppercase tracking-wider hover:bg-red-800 transition-colors border border-red-900 border-b-red-950 shadow-2xl"
-        >
-          <span className="relative z-10 pointer-events-none">
-            Enter the Vault
-          </span>
-        </button>
-      </div>
     </div>
   );
 }

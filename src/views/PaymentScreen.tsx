@@ -50,7 +50,7 @@ export default function PaymentScreen({ onViewChange }: PaymentScreenProps) {
                 Payment Required
               </h2>
               <p className="font-mono text-[10px] text-gray-500 uppercase tracking-widest">
-                Bizcomp Seminar Registration Fee
+                The Bizz Seminar Registration Fee
               </p>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function PaymentScreen({ onViewChange }: PaymentScreenProps) {
               <div className="bg-black/40 border border-white/10 rounded-xl p-6 mb-6">
                 <div className="flex justify-between items-center mb-4">
                   <span className="font-mono text-xs text-gray-400 uppercase tracking-widest">Event</span>
-                  <span className="font-mono text-sm text-white">Bizcomp Seminar</span>
+                  <span className="font-mono text-sm text-white">The Bizz Seminar</span>
                 </div>
                 <div className="flex justify-between items-center mb-4">
                   <span className="font-mono text-xs text-gray-400 uppercase tracking-widest">Department</span>

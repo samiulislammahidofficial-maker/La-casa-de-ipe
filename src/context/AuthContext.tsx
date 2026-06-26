@@ -25,6 +25,8 @@ interface AuthContextType {
   isAdminSession: boolean;
   /** Set admin session */
   setAdminSession: (val: boolean) => void;
+  /** Log in as a demo user to bypass Firebase configuration or whitelist issues */
+  loginAsDemoUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -41,6 +43,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Listen to Firebase Auth state
   useEffect(() => {
+    if (sessionStorage.getItem("demoSession") === "true") {
+      setFirebaseUser({
+        uid: "demo-user-123",
+        email: "demo.operative@lacasadeipe.app",
+        displayName: "Demo Operative",
+        emailVerified: true,
+      } as any);
+      setUserData({
+        name: "Demo Operative",
+        studentId: "2408000",
+        email: "demo.operative@lacasadeipe.app",
+        department: "IPE",
+        contactNo: "+880 1700000000",
+        hallName: "Rashid Hall",
+        role: "user",
+        paymentStatus: "confirmed",
+        registered_events: ["The Bizz Seminar"],
+        createdAt: new Date(),
+      });
+      setNeedsRegistration(false);
+      setIsLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(async (user) => {
       setFirebaseUser(user);
 
@@ -72,14 +98,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = async () => {
-    await logOut();
-    setUserData(null);
-    setNeedsRegistration(false);
-    setIsAdminSession(false);
-    sessionStorage.removeItem("adminSession");
+    if (sessionStorage.getItem("demoSession") === "true") {
+      sessionStorage.removeItem("demoSession");
+      setFirebaseUser(null);
+      setUserData(null);
+      setNeedsRegistration(false);
+      setIsAdminSession(false);
+      sessionStorage.removeItem("adminSession");
+    } else {
+      try {
+        await logOut();
+      } catch (err) {
+        console.error("Firebase logout failed, clearing local state:", err);
+      }
+      setUserData(null);
+      setNeedsRegistration(false);
+      setIsAdminSession(false);
+      sessionStorage.removeItem("adminSession");
+    }
   };
 
   const refreshUserData = async () => {
+    if (sessionStorage.getItem("demoSession") === "true") return;
     if (firebaseUser) {
       const doc = await getUserDocument(firebaseUser.uid);
       if (doc) {
@@ -98,6 +138,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginAsDemoUser = () => {
+    sessionStorage.setItem("demoSession", "true");
+    setFirebaseUser({
+      uid: "demo-user-123",
+      email: "demo.operative@lacasadeipe.app",
+      displayName: "Demo Operative",
+      emailVerified: true,
+    } as any);
+    setUserData({
+      name: "Demo Operative",
+      studentId: "2408000",
+      email: "demo.operative@lacasadeipe.app",
+      department: "IPE",
+      contactNo: "+880 1700000000",
+      hallName: "Rashid Hall",
+      role: "user",
+      paymentStatus: "confirmed",
+      registered_events: ["The Bizz Seminar"],
+      createdAt: new Date(),
+    });
+    setNeedsRegistration(false);
+    // Force a small tick/timeout to let views react to updated state or redirect
+    window.location.reload();
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -109,6 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshUserData,
         isAdminSession,
         setAdminSession: handleSetAdminSession,
+        loginAsDemoUser,
       }}
     >
       {children}

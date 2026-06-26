@@ -98,11 +98,11 @@ export default function RegistrationForm({ onViewChange }: RegistrationFormProps
         hallName: data.hallName.trim(),
         role: "user",
         paymentStatus,
-        registered_events: ["Bizcomp Seminar"],
+        registered_events: ["The Bizz Seminar"],
       });
 
-      // Auto-register for Bizcomp Seminar
-      await addEventToUser(uid, "Bizcomp Seminar");
+      // Auto-register for The Bizz Seminar
+      await addEventToUser(uid, "The Bizz Seminar");
 
       // Refresh auth context
       await refreshUserData();

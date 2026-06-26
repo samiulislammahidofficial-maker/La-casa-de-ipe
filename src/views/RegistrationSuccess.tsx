@@ -64,7 +64,7 @@ export default function RegistrationSuccess({ onViewChange }: RegistrationSucces
                 Auto-registered
               </p>
               <p className="font-display text-lg text-white uppercase tracking-wider">
-                Bizcomp Seminar
+                The Bizz Seminar
               </p>
             </div>
           </div>
